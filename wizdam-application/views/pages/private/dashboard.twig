@@ -1,0 +1,118 @@
+{% extends 'layouts/sidebar.twig' %}
+
+{% block title %}Dashboard Saya – {{ app.name }}{% endblock %}
+{% block page_heading %}Dashboard Saya{% endblock %}
+
+{% set activeMenu = 'dashboard' %}
+
+{% block content %}
+<div class="space-y-6">
+
+    {% if not researcher %}
+    <!-- Belum link ke profil peneliti -->
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start gap-4">
+        <svg class="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div>
+            <h3 class="font-semibold text-amber-800 text-sm">Profil Peneliti Belum Terhubung</h3>
+            <p class="text-amber-700 text-xs mt-1">
+                Hubungkan ORCID Anda untuk melihat impact score dan statistik riset Anda.
+            </p>
+            <a href="/auth/login?orcid=1" class="mt-3 inline-block btn btn-primary text-xs">
+                Hubungkan ORCID →
+            </a>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Kartu Statistik Utama -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {% set kpis = [
+            {label: 'Impact Score', val: score.composite_score|round(1) ?? '–', color: 'indigo'},
+            {label: 'H-Index',      val: researcher.h_index ?? '–',              color: 'violet'},
+            {label: 'Total Sitasi', val: researcher.total_citations ?? 0,        color: 'blue'},
+            {label: 'Karya Tercatat', val: recentWork|length,                    color: 'emerald'},
+        ] %}
+        {% for kpi in kpis %}
+        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm text-center">
+            <div class="text-2xl font-bold text-{{ kpi.color }}-600">{{ kpi.val }}</div>
+            <div class="text-xs text-slate-400 mt-1">{{ kpi.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Tren + Breakdown -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Tren Skor -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="text-sm font-semibold text-slate-700 mb-4">Tren Impact Score</h2>
+            {% if scoreHistory %}
+                {% include 'components/frappe_chart.twig' with {
+                    chart_id:   'dash-trend',
+                    chart_type: 'line',
+                    labels:     scoreHistory|map(r => r.calculated_at|date('M Y')),
+                    datasets:   [{name: 'Skor', values: scoreHistory|map(r => r.composite_score)}],
+                    colors:     ['#6366f1'],
+                    height:     180
+                } %}
+            {% else %}
+                <p class="text-slate-400 text-xs italic text-center py-8">Belum ada data tren.</p>
+            {% endif %}
+        </div>
+
+        <!-- 4 Pilar -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col items-center justify-center">
+            <h2 class="text-sm font-semibold text-slate-700 mb-4 self-start">4 Pilar Dampak</h2>
+            {% include 'components/impact_score_badge.twig' with {score: score, size: 'lg'} %}
+        </div>
+    </div>
+
+    <!-- Karya Terbaru -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-slate-700 mb-3">Karya Terbaru Anda</h2>
+        {% if recentWork %}
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-slate-100 text-xs text-slate-400 uppercase">
+                    <th class="py-2 text-left">Judul</th>
+                    <th class="py-2 text-left hidden md:table-cell">Jurnal</th>
+                    <th class="py-2 text-right">Tahun</th>
+                    <th class="py-2 text-right">Sitasi</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for w in recentWork %}
+            <tr class="border-b border-slate-50 hover:bg-slate-50">
+                <td class="py-2.5 font-medium text-slate-800 truncate max-w-[200px]">{{ w.title }}</td>
+                <td class="py-2.5 text-slate-500 text-xs hidden md:table-cell truncate max-w-[150px]">{{ w.journal_name ?? '–' }}</td>
+                <td class="py-2.5 text-right text-slate-500">{{ w.year }}</td>
+                <td class="py-2.5 text-right font-medium text-slate-700">{{ w.citations }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="text-slate-400 text-xs italic text-center py-6">Belum ada karya yang tercatat.</p>
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+    <!-- Notifikasi -->
+    {% if notifications %}
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-slate-700 mb-3">Notifikasi ({{ notifications|length }})</h2>
+        <ul class="space-y-2">
+        {% for n in notifications %}
+        <li class="flex items-start gap-2 text-xs text-slate-600">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0"></span>
+            {{ n.message }} <span class="ml-auto text-slate-400 whitespace-nowrap">{{ n.created_at|date('d M') }}</span>
+        </li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

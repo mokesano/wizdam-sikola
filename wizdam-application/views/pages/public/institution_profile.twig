@@ -1,0 +1,89 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header Institusi -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-start">
+        <div class="w-14 h-14 rounded-xl bg-indigo-100 flex items-center justify-center text-2xl font-bold text-indigo-600 flex-shrink-0">
+            {{ institution.acronym ? institution.acronym|slice(0,2)|upper : institution.name|first|upper }}
+        </div>
+        <div class="flex-1">
+            <h1 class="text-2xl font-bold text-slate-900">{{ institution.name }}</h1>
+            <p class="text-slate-500 text-sm mt-0.5">
+                {{ institution.type ?? '' }}
+                {% if institution.city %} · {{ institution.city }}{% endif %}
+                {% if institution.province %}, {{ institution.province }}{% endif %}
+            </p>
+            <div class="flex flex-wrap gap-3 mt-3 text-xs">
+                <span class="badge badge-slate">{{ institution.researcher_count ?? 0 }} Peneliti</span>
+                <span class="badge badge-slate">{{ institution.total_citations|number_format ?? 0 }} Total Sitasi</span>
+                {% if institution.sinta_id %}
+                <span class="badge badge-blue">SINTA ID: {{ institution.sinta_id }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="flex-shrink-0">
+            {% include 'components/impact_score_badge.twig' with {score: score, size: 'lg'} %}
+        </div>
+    </div>
+
+    <!-- Tren Publikasi (Frappe) -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">Tren Publikasi per Tahun</h2>
+        {% if pubTrend %}
+            {% include 'components/frappe_chart.twig' with {
+                chart_id:   'pub-trend',
+                chart_type: 'bar',
+                labels:     pubTrend|map(r => r.year|string),
+                datasets:   [
+                    {name: 'Artikel', values: pubTrend|map(r => r.total_articles)},
+                    {name: 'Sitasi',  values: pubTrend|map(r => r.total_citations)}
+                ],
+                colors:  ['#6366f1', '#10b981'],
+                height:  220
+            } %}
+        {% else %}
+            <p class="text-center text-slate-400 text-sm italic py-10">Data tren belum tersedia.</p>
+        {% endif %}
+    </div>
+
+    <!-- Tabel Peneliti -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">Peneliti di Institusi Ini</h2>
+        {% if researchers %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100 text-xs text-slate-400 uppercase">
+                        <th class="py-2 text-left">Nama</th>
+                        <th class="py-2 text-right">H-Index</th>
+                        <th class="py-2 text-right">Sitasi</th>
+                        <th class="py-2 text-right">Skor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for r in researchers %}
+                <tr class="border-b border-slate-50 hover:bg-slate-50">
+                    <td class="py-2.5">
+                        <a href="/researcher/{{ r.orcid ?? r.id }}" class="font-medium text-indigo-700 hover:underline">
+                            {{ r.name }}
+                        </a>
+                    </td>
+                    <td class="py-2.5 text-right text-slate-500">{{ r.h_index ?? '–' }}</td>
+                    <td class="py-2.5 text-right text-slate-500">{{ r.total_citations ?? 0 }}</td>
+                    <td class="py-2.5 text-right">
+                        <span class="badge badge-indigo">{{ r.impact_score|round(1) }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-slate-400 text-sm italic text-center py-6">Belum ada peneliti yang terdaftar.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

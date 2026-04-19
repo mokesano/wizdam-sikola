@@ -1,0 +1,107 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Peneliti Terdampak</h1>
+            <p class="text-slate-500 text-sm mt-1">Daftar peneliti Indonesia berdasarkan Impact Score tertinggi</p>
+        </div>
+
+        <!-- Search -->
+        <form method="GET" action="/" class="flex gap-2">
+            <input
+                type="text" name="q" value="{{ search }}"
+                placeholder="Cari nama peneliti…"
+                class="form-input w-full md:w-64"
+            >
+            <button type="submit" class="btn btn-primary px-4">Cari</button>
+        </form>
+    </div>
+
+    <!-- Filter Bidang -->
+    <div class="flex flex-wrap gap-2 text-sm">
+        {% set fields = ['all', 'teknik', 'kedokteran', 'pertanian', 'sosial', 'hukum', 'ekonomi'] %}
+        {% for f in fields %}
+        <a href="/?field={{ f }}"
+           class="px-3 py-1 rounded-full border transition-colors
+                  {% if field == f %}bg-indigo-600 text-white border-indigo-600{% else %}bg-white text-slate-600 border-slate-300 hover:border-indigo-400{% endif %}">
+            {{ f|title == 'All' ? 'Semua Bidang' : f|title }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Rata-rata Platform -->
+    {% if avgPillars %}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {% set pillars = [
+            {label: 'Rata-rata Akademik', val: avgPillars.avg_academic, color: 'blue'},
+            {label: 'Rata-rata Sosial',   val: avgPillars.avg_social,   color: 'violet'},
+            {label: 'Rata-rata Ekonomi',  val: avgPillars.avg_economic, color: 'amber'},
+            {label: 'Rata-rata SDG',      val: avgPillars.avg_sdg,      color: 'emerald'},
+        ] %}
+        {% for p in pillars %}
+        <div class="bg-white rounded-xl border border-slate-200 px-4 py-3 text-center shadow-sm">
+            <div class="text-xl font-bold text-{{ p.color }}-600">{{ p.val|round(1) }}</div>
+            <div class="text-xs text-slate-400 mt-0.5">{{ p.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Tabel Peneliti -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-400 uppercase tracking-wide">
+                    <th class="py-3 px-4 text-left">#</th>
+                    <th class="py-3 px-4 text-left">Peneliti</th>
+                    <th class="py-3 px-4 text-left hidden md:table-cell">Institusi</th>
+                    <th class="py-3 px-4 text-right hidden sm:table-cell">H-Index</th>
+                    <th class="py-3 px-4 text-right hidden sm:table-cell">Sitasi</th>
+                    <th class="py-3 px-4 text-right">Impact Score</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for i, r in researchers %}
+            <tr class="border-b border-slate-50 hover:bg-indigo-50 transition-colors group">
+                <td class="py-3 px-4 text-slate-400 font-mono text-xs">{{ i + 1 }}</td>
+                <td class="py-3 px-4">
+                    <a href="/researcher/{{ r.orcid ?? r.id }}"
+                       class="font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">
+                        {{ r.name }}
+                    </a>
+                    {% if r.orcid %}
+                    <div class="text-xs text-slate-400 font-mono">{{ r.orcid }}</div>
+                    {% endif %}
+                </td>
+                <td class="py-3 px-4 text-slate-500 text-xs hidden md:table-cell truncate max-w-[200px]">
+                    {{ r.institution_name ?? '–' }}
+                </td>
+                <td class="py-3 px-4 text-right text-slate-600 hidden sm:table-cell">{{ r.h_index ?? '–' }}</td>
+                <td class="py-3 px-4 text-right text-slate-600 hidden sm:table-cell">{{ r.total_citations ?? 0 }}</td>
+                <td class="py-3 px-4 text-right">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold
+                        {% if r.impact_score >= 80 %}bg-emerald-100 text-emerald-700
+                        {% elseif r.impact_score >= 60 %}bg-blue-100 text-blue-700
+                        {% elseif r.impact_score >= 40 %}bg-amber-100 text-amber-700
+                        {% else %}bg-slate-100 text-slate-600{% endif %}">
+                        {{ r.impact_score|round(1) }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="py-12 text-center text-slate-400 italic">
+                    Tidak ada peneliti yang ditemukan{% if search %} untuk "{{ search }}"{% endif %}.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

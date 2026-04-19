@@ -1,0 +1,40 @@
+{#
+  Komponen: Frappe Chart Wrapper
+  Parameter:
+    - chart_id: string (ID unik elemen)
+    - chart_type: 'bar'|'line'|'pie'|'percentage' (default: 'bar')
+    - chart_title: string
+    - labels: array of string
+    - datasets: array of {name: string, values: array}
+    - height: int (default: 220)
+    - colors: array of hex string (opsional)
+    - is_navigable: bool (default: false)
+#}
+{% set chart_id    = chart_id    ?? 'chart_' ~ random() %}
+{% set chart_type  = chart_type  ?? 'bar' %}
+{% set chart_title = chart_title ?? '' %}
+{% set height      = height      ?? 220 %}
+
+<div id="{{ chart_id }}" class="frappe-chart-wrapper"></div>
+
+<script>
+(function() {
+    const data = {
+        labels: {{ labels|json_encode|raw }},
+        datasets: {{ datasets|json_encode|raw }}
+    };
+
+    new frappe.Chart('#{{ chart_id }}', {
+        title: {{ chart_title|json_encode|raw }},
+        data: data,
+        type: '{{ chart_type }}',
+        height: {{ height }},
+        {% if colors is defined %}
+        colors: {{ colors|json_encode|raw }},
+        {% endif %}
+        isNavigable: {{ is_navigable ?? false ? 'true' : 'false' }},
+        lineOptions: { regionFill: 1, hideDots: 0 },
+        axisOptions: { xIsSeries: true }
+    });
+})();
+</script>

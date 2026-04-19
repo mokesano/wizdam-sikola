@@ -1,0 +1,78 @@
+{% extends 'layouts/base.twig' %}
+
+{% block title %}Masuk – {{ app.name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center py-12 px-4">
+    <div class="w-full max-w-md">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <a href="/" class="inline-flex items-center gap-2 text-indigo-700 font-bold text-xl">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Wizdam AI-Sikola
+            </a>
+            <p class="mt-2 text-slate-500 text-sm">Platform Pengukuran Dampak Riset Indonesia</p>
+        </div>
+
+        <!-- Card Login -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-8">
+
+            <h1 class="text-xl font-bold text-slate-800 mb-6">Masuk ke Akun Anda</h1>
+
+            {% if error %}
+                <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <!-- Login dengan ORCID (utama) -->
+            <a href="/auth/login?orcid=1"
+               class="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl
+                      bg-green-600 hover:bg-green-700 text-white font-semibold text-sm
+                      transition-colors shadow-sm mb-4">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10" fill="#A6CE39"/>
+                    <text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="white">iD</text>
+                </svg>
+                Masuk dengan ORCID
+            </a>
+
+            <div class="relative flex items-center my-5">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="px-3 text-xs text-slate-400">atau dengan email</span>
+                <div class="flex-1 border-t border-slate-200"></div>
+            </div>
+
+            <!-- Form Email/Password -->
+            <form method="POST" action="/auth/login" class="space-y-4">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                    <input
+                        type="email" id="email" name="email" required autocomplete="email"
+                        class="form-input w-full"
+                        placeholder="nama@institusi.ac.id"
+                    >
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input
+                        type="password" id="password" name="password" required autocomplete="current-password"
+                        class="form-input w-full"
+                        placeholder="••••••••"
+                    >
+                </div>
+                <button type="submit" class="btn btn-primary w-full py-2.5">
+                    Masuk
+                </button>
+            </form>
+        </div>
+
+        <p class="text-center text-xs text-slate-400 mt-6">
+            Belum punya akun? Daftar melalui ORCID secara otomatis saat pertama kali login.
+        </p>
+    </div>
+</div>
+{% endblock %}

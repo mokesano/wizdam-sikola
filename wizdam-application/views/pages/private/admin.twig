@@ -1,0 +1,117 @@
+{% extends 'layouts/sidebar.twig' %}
+
+{% block title %}Admin Analytics – {{ app.name }}{% endblock %}
+{% block page_heading %}Analytics Platform{% endblock %}
+
+{% set activeMenu = 'admin' %}
+{% set isAdmin = true %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Statistik Ringkasan -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {% set stat_items = [
+            {label: 'Peneliti',    val: stats.total_researchers,  color: 'indigo'},
+            {label: 'Institusi',   val: stats.total_institutions, color: 'violet'},
+            {label: 'Jurnal',      val: stats.total_journals,     color: 'blue'},
+            {label: 'Artikel',     val: stats.total_articles,     color: 'emerald'},
+            {label: 'Pengguna',    val: stats.total_users,        color: 'amber'},
+        ] %}
+        {% for s in stat_items %}
+        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm text-center">
+            <div class="text-2xl font-bold text-{{ s.color }}-600">{{ s.val|number_format }}</div>
+            <div class="text-xs text-slate-400 mt-1">{{ s.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Tren Harvesting -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="text-sm font-semibold text-slate-700 mb-4">Artikel Masuk (7 Hari Terakhir)</h2>
+            {% if harvestTrend %}
+                {% include 'components/frappe_chart.twig' with {
+                    chart_id:   'harvest-trend',
+                    chart_type: 'bar',
+                    labels:     harvestTrend|map(r => r.date),
+                    datasets:   [{name: 'Artikel Baru', values: harvestTrend|map(r => r.inserted)}],
+                    colors:     ['#6366f1'],
+                    height:     200
+                } %}
+            {% else %}
+                <p class="text-slate-400 text-xs italic text-center py-10">Tidak ada data harvesting.</p>
+            {% endif %}
+        </div>
+
+        <!-- Distribusi Skor -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="text-sm font-semibold text-slate-700 mb-4">Distribusi Impact Score Peneliti</h2>
+            {% if scoreDistribution %}
+                {% include 'components/frappe_chart.twig' with {
+                    chart_id:   'score-dist',
+                    chart_type: 'bar',
+                    labels:     scoreDistribution|map(r => r.bucket ~ '–' ~ (r.bucket + 10)),
+                    datasets:   [{name: 'Jumlah Peneliti', values: scoreDistribution|map(r => r.count)}],
+                    colors:     ['#10b981'],
+                    height:     200
+                } %}
+            {% else %}
+                <p class="text-slate-400 text-xs italic text-center py-10">Belum ada data distribusi.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top Institusi -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-slate-700 mb-4">Top 10 Institusi (Rata-rata Impact Score)</h2>
+        {% if topInstitutions %}
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-slate-100 text-xs text-slate-400 uppercase">
+                    <th class="py-2 text-left">#</th>
+                    <th class="py-2 text-left">Institusi</th>
+                    <th class="py-2 text-right">Peneliti</th>
+                    <th class="py-2 text-right">Rata-rata Skor</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for i, inst in topInstitutions %}
+            <tr class="border-b border-slate-50 hover:bg-slate-50">
+                <td class="py-2 text-slate-400 text-xs font-mono">{{ i + 1 }}</td>
+                <td class="py-2 font-medium text-slate-800">{{ inst.name }}</td>
+                <td class="py-2 text-right text-slate-500">{{ inst.researcher_count }}</td>
+                <td class="py-2 text-right">
+                    <span class="badge badge-indigo">{{ inst.avg_score|round(1) }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="text-slate-400 text-xs italic text-center py-6">Belum ada data institusi.</p>
+        {% endif %}
+    </div>
+
+    <!-- Log Aktivitas -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <h2 class="text-sm font-semibold text-slate-700 mb-4">Log Aktivitas Terbaru</h2>
+        {% if recentLogs %}
+        <ul class="divide-y divide-slate-50">
+        {% for log in recentLogs %}
+            <li class="py-2 flex items-center justify-between text-xs text-slate-600">
+                <span class="font-mono text-slate-400">{{ log.created_at|date('d/m H:i') }}</span>
+                <span>{{ log.action }}</span>
+                <span class="text-slate-400 truncate max-w-[200px]">{{ log.description ?? '' }}</span>
+            </li>
+        {% endfor %}
+        </ul>
+        {% else %}
+            <p class="text-slate-400 text-xs italic text-center py-6">Belum ada log aktivitas.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

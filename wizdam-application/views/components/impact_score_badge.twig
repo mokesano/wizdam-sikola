@@ -1,0 +1,51 @@
+{#
+  Komponen: Impact Score Badge
+  Parameter:
+    - score: array (composite_score, pillar_academic, pillar_social, pillar_economic, pillar_sdg)
+    - size: 'sm' | 'md' | 'lg' (default: 'md')
+    - show_pillars: boolean (default: true)
+#}
+{% set size = size ?? 'md' %}
+{% set show_pillars = show_pillars ?? true %}
+
+{% if score %}
+    {% set cs = score.composite_score|round(1) %}
+    {% set color = cs >= 80 ? 'emerald' : (cs >= 60 ? 'blue' : (cs >= 40 ? 'amber' : 'slate')) %}
+
+    <div class="impact-score-badge inline-flex flex-col items-center gap-1">
+        <!-- Skor Komposit Utama -->
+        <div class="
+            {% if size == 'lg' %}w-20 h-20 text-2xl{% elseif size == 'sm' %}w-10 h-10 text-sm{% else %}w-14 h-14 text-lg{% endif %}
+            rounded-full bg-{{ color }}-100 border-2 border-{{ color }}-400
+            flex items-center justify-center font-bold text-{{ color }}-700
+            ring-4 ring-{{ color }}-50
+        ">
+            {{ cs }}
+        </div>
+        <span class="text-xs text-slate-500 font-medium">Impact Score</span>
+
+        {% if show_pillars and size != 'sm' %}
+        <!-- 4 Pilar -->
+        <div class="grid grid-cols-4 gap-1 mt-1 text-center text-xs">
+            <div class="pillar-item">
+                <div class="font-semibold text-blue-600">{{ score.pillar_academic|round(0) }}</div>
+                <div class="text-slate-400">Akademik</div>
+            </div>
+            <div class="pillar-item">
+                <div class="font-semibold text-violet-600">{{ score.pillar_social|round(0) }}</div>
+                <div class="text-slate-400">Sosial</div>
+            </div>
+            <div class="pillar-item">
+                <div class="font-semibold text-amber-600">{{ score.pillar_economic|round(0) }}</div>
+                <div class="text-slate-400">Ekonomi</div>
+            </div>
+            <div class="pillar-item">
+                <div class="font-semibold text-emerald-600">{{ score.pillar_sdg|round(0) }}</div>
+                <div class="text-slate-400">SDG</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="text-slate-400 text-xs italic">Skor belum tersedia</div>
+{% endif %}

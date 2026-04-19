@@ -1,0 +1,145 @@
+{% extends 'layouts/base.twig' %}
+
+{% block title %}PDF Compressor – Wizdam Tools{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900">PDF Compressor</h1>
+        <p class="text-slate-500 text-sm mt-1">Kompres file PDF menggunakan Ghostscript. Maksimal 50 MB.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
+
+        <!-- Drop Zone -->
+        <div id="drop-zone"
+             class="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center cursor-pointer
+                    hover:border-indigo-400 hover:bg-indigo-50 transition-colors">
+            <svg class="w-10 h-10 text-slate-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <p class="text-slate-500 text-sm">Seret PDF ke sini atau <span class="text-indigo-600 font-medium">klik untuk memilih</span></p>
+            <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
+        </div>
+
+        <!-- Preset Kualitas -->
+        <div>
+            <label class="block text-xs font-medium text-slate-600 mb-2">Preset Kualitas</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {% for preset in qualityPresets %}
+                {% set labels = {screen: 'Screen (72 dpi)', ebook: 'eBook (150 dpi)', printer: 'Printer (300 dpi)', prepress: 'Prepress (CMYK)'} %}
+                <label class="cursor-pointer">
+                    <input type="radio" name="quality" value="{{ preset }}"
+                           class="peer sr-only"
+                           {% if preset == 'ebook' %}checked{% endif %}>
+                    <div class="text-center border border-slate-200 rounded-lg px-2 py-2 text-xs text-slate-600
+                                peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 peer-checked:font-semibold
+                                hover:border-indigo-300 transition-colors">
+                        {{ labels[preset] ?? preset }}
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <button id="compressBtn" disabled
+                class="btn btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
+            Kompres Sekarang
+        </button>
+
+        <!-- Progress -->
+        <div id="progress" class="hidden">
+            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-indigo-500 animate-pulse w-full"></div>
+            </div>
+            <p class="text-xs text-slate-400 text-center mt-1">Memproses dengan Ghostscript…</p>
+        </div>
+
+        <!-- Hasil -->
+        <div id="result" class="hidden bg-emerald-50 rounded-xl border border-emerald-200 p-4 space-y-3">
+            <p class="text-sm font-semibold text-emerald-700">Kompresi Berhasil!</p>
+            <div class="flex flex-wrap gap-4 text-xs text-emerald-600">
+                <span>Semula: <strong id="res-orig">–</strong></span>
+                <span>Sesudah: <strong id="res-comp">–</strong></span>
+                <span>Pengurangan: <strong id="res-pct">–</strong></span>
+            </div>
+            <a id="downloadLink" href="#" download="compressed.pdf" class="btn btn-primary text-xs inline-block">
+                Unduh PDF Terkompresi
+            </a>
+        </div>
+
+        <!-- Error -->
+        <div id="error-box" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dropZone    = document.getElementById('drop-zone');
+const pdfInput    = document.getElementById('pdfInput');
+const compressBtn = document.getElementById('compressBtn');
+const progress    = document.getElementById('progress');
+const result      = document.getElementById('result');
+const errorBox    = document.getElementById('error-box');
+
+let selectedFile  = null;
+
+dropZone.addEventListener('click',    () => pdfInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-indigo-500'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-indigo-500'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('border-indigo-500');
+    handleFile(e.dataTransfer.files[0]);
+});
+pdfInput.addEventListener('change', () => handleFile(pdfInput.files[0]));
+
+function handleFile(file) {
+    if (!file) return;
+    selectedFile = file;
+    dropZone.querySelector('p').textContent = `✓ ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+    compressBtn.disabled = false;
+}
+
+compressBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    errorBox.classList.add('hidden');
+    result.classList.add('hidden');
+    progress.classList.remove('hidden');
+    compressBtn.disabled = true;
+
+    const quality = document.querySelector('input[name="quality"]:checked')?.value ?? 'ebook';
+    const fd      = new FormData();
+    fd.append('pdf',     selectedFile);
+    fd.append('quality', quality);
+
+    try {
+        const res  = await fetch('/tools/pdf-compress', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        progress.classList.add('hidden');
+
+        if (data.error) {
+            errorBox.textContent = data.error;
+            errorBox.classList.remove('hidden');
+        } else {
+            document.getElementById('res-orig').textContent  = `${data.original_kb} KB`;
+            document.getElementById('res-comp').textContent  = `${data.compressed_kb} KB`;
+            document.getElementById('res-pct').textContent   = `${data.reduction_pct}%`;
+            document.getElementById('downloadLink').href      = data.url;
+            result.classList.remove('hidden');
+        }
+    } catch (e) {
+        progress.classList.add('hidden');
+        errorBox.textContent = 'Terjadi kesalahan jaringan.';
+        errorBox.classList.remove('hidden');
+    } finally {
+        compressBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

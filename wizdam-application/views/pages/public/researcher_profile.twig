@@ -1,0 +1,132 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- ── Header Profil ── -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6">
+
+        <!-- Avatar -->
+        <div class="flex-shrink-0">
+            <div class="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-3xl font-bold text-indigo-600">
+                {{ researcher.name|first|upper }}
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="flex-1 min-w-0">
+            <h1 class="text-2xl font-bold text-slate-900">{{ researcher.name }}</h1>
+            <p class="text-slate-500 text-sm mt-0.5">{{ researcher.institution_name ?? 'Institusi tidak diketahui' }}</p>
+
+            <div class="flex flex-wrap gap-3 mt-3 text-xs text-slate-500">
+                {% if researcher.orcid %}
+                <a href="https://orcid.org/{{ researcher.orcid }}" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-1 text-green-600 hover:underline font-medium">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="#A6CE39"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="bold" fill="white">iD</text></svg>
+                    ORCID {{ researcher.orcid }}
+                </a>
+                {% endif %}
+                {% if researcher.sinta_id %}
+                <span class="badge badge-blue">SINTA {{ researcher.sinta_id }}</span>
+                {% endif %}
+                {% if researcher.h_index %}
+                <span class="badge badge-slate">h-index: {{ researcher.h_index }}</span>
+                {% endif %}
+                {% if researcher.total_citations %}
+                <span class="badge badge-slate">{{ researcher.total_citations|number_format }} sitasi</span>
+                {% endif %}
+            </div>
+
+            <!-- SDG Tags -->
+            {% if sdgTags %}
+            <div class="mt-3">
+                {% include 'components/sdg_card.twig' with {sdg_tags: sdgTags, max_show: 4} %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Impact Score Badge -->
+        <div class="flex-shrink-0 flex justify-center">
+            {% include 'components/impact_score_badge.twig' with {score: score, size: 'lg'} %}
+        </div>
+    </div>
+
+    <!-- ── Grid Utama ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Tren Skor (Frappe Chart) -->
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h2 class="text-base font-semibold text-slate-700 mb-4">Tren Impact Score (12 Bulan)</h2>
+            {% if scoreHistory %}
+                {% set labels   = scoreHistory|map(r => r.calculated_at|date('M Y')) %}
+                {% set datasets = [{ name: 'Skor Komposit', values: scoreHistory|map(r => r.composite_score) }] %}
+                {% include 'components/frappe_chart.twig' with {
+                    chart_id:    'score-trend',
+                    chart_type:  'line',
+                    chart_title: 'Tren Impact Score',
+                    labels:      labels,
+                    datasets:    datasets,
+                    colors:      ['#6366f1'],
+                    height:      200
+                } %}
+            {% else %}
+                <p class="text-slate-400 text-sm italic text-center py-10">Data tren belum tersedia.</p>
+            {% endif %}
+        </div>
+
+        <!-- Breakdown 4 Pilar -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+            <h2 class="text-base font-semibold text-slate-700 mb-4">Breakdown 4 Pilar</h2>
+            {% if score %}
+                {% include 'components/frappe_chart.twig' with {
+                    chart_id:    'pillar-breakdown',
+                    chart_type:  'percentage',
+                    chart_title: '',
+                    labels:      ['Akademik (40%)', 'Sosial (25%)', 'Ekonomi (20%)', 'SDG (15%)'],
+                    datasets:    [{ values: [score.pillar_academic, score.pillar_social, score.pillar_economic, score.pillar_sdg] }],
+                    colors:      ['#6366f1', '#8b5cf6', '#f59e0b', '#10b981'],
+                    height:      180
+                } %}
+            {% else %}
+                <p class="text-slate-400 text-sm italic text-center py-10">Skor belum tersedia.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Artikel Terbaru ── -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">Artikel Terbaru</h2>
+        {% if recentArticles %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wide">
+                        <th class="py-2 text-left font-medium">Judul</th>
+                        <th class="py-2 text-left font-medium">Jurnal</th>
+                        <th class="py-2 text-right font-medium">Tahun</th>
+                        <th class="py-2 text-right font-medium">Sitasi</th>
+                        <th class="py-2 text-right font-medium">Skor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for article in recentArticles %}
+                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                    <td class="py-2.5 pr-4 font-medium text-slate-800 max-w-xs truncate">{{ article.title }}</td>
+                    <td class="py-2.5 pr-4 text-slate-500 text-xs truncate max-w-[150px]">{{ article.journal_name ?? '–' }}</td>
+                    <td class="py-2.5 text-right text-slate-500">{{ article.year }}</td>
+                    <td class="py-2.5 text-right text-slate-700 font-medium">{{ article.citations }}</td>
+                    <td class="py-2.5 text-right">
+                        <span class="badge badge-indigo">{{ article.impact_score|round(1) }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-slate-400 text-sm italic text-center py-6">Belum ada artikel yang tercatat.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

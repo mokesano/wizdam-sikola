@@ -1,0 +1,12 @@
+Options -Indexes
+RewriteEngine On
+
+# Blok akses langsung ke direktori sensitif
+RewriteRule ^(app|config|library|views|vendor)(/.*)?$ - [F,L]
+
+# Izinkan akses ke assets statis
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Arahkan semua request ke index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
