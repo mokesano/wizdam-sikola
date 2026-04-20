@@ -8,6 +8,9 @@ use PDO;
 use Twig\Environment;
 use Wizdam\Database\DBConnector;
 use Wizdam\Services\Core\AuthManager;
+use Wizdam\Services\WizdamApiClient;
+use Wizdam\Services\ApiKeyManager;
+use Wizdam\Jobs\QueueManager;
 use Dotenv\Dotenv;
 
 /**
@@ -21,6 +24,9 @@ class App
     private ?PDO $db = null;
     private ?Environment $twig = null;
     private ?AuthManager $auth = null;
+    private ?WizdamApiClient $apiClient = null;
+    private ?ApiKeyManager $apiKeyManager = null;
+    private ?QueueManager $queueManager = null;
 
     private function __construct() {}
 
@@ -36,7 +42,7 @@ class App
     }
 
     /**
-     * Bootstrap aplikasi: load env, config, database, twig, auth
+     * Bootstrap aplikasi: load env, config, database, twig, auth, services
      */
     public function bootstrap(string $basePath): self
     {
@@ -56,19 +62,27 @@ class App
         // Init Twig
         $loader = new \Twig\Loader\FilesystemLoader($basePath . '/views');
         $this->twig = new Environment($loader, [
-            'cache' => $this->config['twig_cache'] ? $basePath . '/library/cache/twig' : false,
+            'cache' => $this->config['twig_cache'] ? $basePath . '/storage/cache/twig' : false,
             'debug' => $this->config['debug'],
+            'auto_reload' => $this->config['debug'],
         ]);
 
         if ($this->config['debug']) {
             $this->twig->addExtension(new \Twig\Extension\DebugExtension());
         }
 
+        // Add global variables
         $this->twig->addGlobal('app', $this->config);
+        $this->twig->addGlobal('base_url', $this->config['url'] ?? '/');
+        $this->twig->addGlobal('current_year', date('Y'));
 
         // Init Auth
         $this->auth = new AuthManager($this->db);
         $this->twig->addGlobal('currentUser', $this->auth->isLoggedIn() ? $this->auth->getUserId() : null);
+        $this->twig->addGlobal('isLoggedIn', $this->auth->isLoggedIn());
+
+        // Init services (lazy loading)
+        // Services akan diinisialisasi saat pertama kali diakses
 
         return $this;
     }
@@ -96,11 +110,91 @@ class App
         return $this->auth;
     }
 
+    public function getAuthService(): AuthManager
+    {
+        return $this->auth;
+    }
+
+    public function getDatabase(): PDO
+    {
+        return $this->db;
+    }
+
+    public function getApiClient(): WizdamApiClient
+    {
+        if ($this->apiClient === null) {
+            $this->apiClient = new WizdamApiClient($this->db);
+        }
+        return $this->apiClient;
+    }
+
+    public function getApiKeyManager(): ApiKeyManager
+    {
+        if ($this->apiKeyManager === null) {
+            $this->apiKeyManager = new ApiKeyManager($this->db);
+        }
+        return $this->apiKeyManager;
+    }
+
+    public function getQueueManager(): QueueManager
+    {
+        if ($this->queueManager === null) {
+            $this->queueManager = new QueueManager($this->db);
+        }
+        return $this->queueManager;
+    }
+
     /**
      * Helper untuk membuat handler dengan dependency injection otomatis
      */
     public function makeHandler(string $className): object
     {
-        return new $className($this->getDb(), $this->getTwig(), $this->getAuth());
+        $reflection = new \ReflectionClass($className);
+        $constructor = $reflection->getConstructor();
+        
+        if ($constructor === null) {
+            return new $className();
+        }
+
+        $parameters = $constructor->getParameters();
+        $dependencies = [];
+
+        foreach ($parameters as $param) {
+            $type = $param->getType();
+            
+            if ($type === null) {
+                continue;
+            }
+
+            $typeName = $type->getName();
+
+            switch ($typeName) {
+                case 'PDO':
+                    $dependencies[] = $this->getDb();
+                    break;
+                case 'Twig\Environment':
+                    $dependencies[] = $this->getTwig();
+                    break;
+                case 'Wizdam\Services\Core\AuthManager':
+                    $dependencies[] = $this->getAuth();
+                    break;
+                case 'Wizdam\Services\WizdamApiClient':
+                    $dependencies[] = $this->getApiClient();
+                    break;
+                case 'Wizdam\Services\ApiKeyManager':
+                    $dependencies[] = $this->getApiKeyManager();
+                    break;
+                case 'Wizdam\Jobs\QueueManager':
+                    $dependencies[] = $this->getQueueManager();
+                    break;
+                default:
+                    if ($param->isDefaultValueAvailable()) {
+                        $dependencies[] = $param->getDefaultValue();
+                    }
+                    break;
+            }
+        }
+
+        return $reflection->newInstanceArgs($dependencies);
     }
 }

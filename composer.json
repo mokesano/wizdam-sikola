@@ -11,14 +11,29 @@
         "guzzlehttp/guzzle": "^7.0",
         "ext-pdo": "*",
         "ext-json": "*",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "ext-curl": "*",
+        "ext-redis": "*"
     },
     "autoload": {
         "psr-4": {
-            "Wizdam\\": "app/"
-        }
+            "Wizdam\\App\\": "app/",
+            "Wizdam\\Library\\": "library/"
+        },
+        "files": [
+            "library/Helpers/helpers.php"
+        ]
     },
     "config": {
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php -r \"file_exists('storage/logs') || mkdir('storage/logs', 0755, true);\""
+        ],
+        "post-update-cmd": [
+            "@php -r \"file_exists('storage/logs') || mkdir('storage/logs', 0755, true);\""
+        ]
     }
 }
