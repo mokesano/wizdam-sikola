@@ -1,136 +1,192 @@
 <?php
 
-namespace Wizdam\Library\Helpers;
-
 /**
- * Helper functions untuk berbagai kebutuhan umum
+ * Global helper functions
+ * 
+ * File ini berisi fungsi-fungsi helper yang dapat digunakan di seluruh aplikasi
  */
-class Helpers
-{
-    /**
-     * Generate UUID v4
-     */
-    public static function uuid(): string
+
+use Wizdam\Library\Helpers\Helpers;
+
+if (!function_exists('uuid')) {
+    function uuid(): string
     {
-        $data = random_bytes(16);
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-        
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        return Helpers::uuid();
     }
-    
-    /**
-     * Format angka dengan separator ribuan
-     */
-    public static function formatNumber(int|float $number, int $decimals = 0): string
+}
+
+if (!function_exists('format_number')) {
+    function format_number(int|float $number, int $decimals = 0): string
     {
-        return number_format($number, $decimals, ',', '.');
+        return Helpers::formatNumber($number, $decimals);
     }
-    
-    /**
-     * Truncate string dengan ellipsis
-     */
-    public static function truncate(string $text, int $length = 100, string $suffix = '...'): string
+}
+
+if (!function_exists('truncate')) {
+    function truncate(string $text, int $length = 100, string $suffix = '...'): string
     {
-        if (strlen($text) <= $length) {
-            return $text;
-        }
-        
-        return substr($text, 0, $length) . $suffix;
+        return Helpers::truncate($text, $length, $suffix);
     }
-    
-    /**
-     * Slugify string untuk URL
-     */
-    public static function slugify(string $text): string
+}
+
+if (!function_exists('slugify')) {
+    function slugify(string $text): string
     {
-        $text = preg_replace('~[^\p{Latin}\d]+~u', '-', $text);
-        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-        $text = preg_replace('~[^-\w]+~', '', $text);
-        $text = trim($text, '-');
-        $text = preg_replace('~-+~', '-', $text);
-        $text = strtolower($text);
-        
-        return empty($text) ? 'n-a' : $text;
+        return Helpers::slugify($text);
     }
-    
-    /**
-     * Human readable time ago
-     */
-    public static function timeAgo(\DateTimeInterface $date): string
+}
+
+if (!function_exists('time_ago')) {
+    function time_ago(\DateTimeInterface $date): string
     {
-        $now = new \DateTime();
-        $diff = $now->diff($date);
+        return Helpers::timeAgo($date);
+    }
+}
+
+if (!function_exists('sanitize')) {
+    function sanitize(string $input): string
+    {
+        return Helpers::sanitize($input);
+    }
+}
+
+if (!function_exists('is_valid_email')) {
+    function is_valid_email(string $email): bool
+    {
+        return Helpers::isValidEmail($email);
+    }
+}
+
+if (!function_exists('random_string')) {
+    function random_string(int $length = 32, string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string
+    {
+        return Helpers::randomString($length, $charset);
+    }
+}
+
+if (!function_exists('human_file_size')) {
+    function human_file_size(int $bytes): string
+    {
+        return Helpers::humanFileSize($bytes);
+    }
+}
+
+if (!function_exists('is_ajax')) {
+    function is_ajax(): bool
+    {
+        return Helpers::isAjax();
+    }
+}
+
+if (!function_exists('config')) {
+    function config(string $key, $default = null)
+    {
+        static $configs = [];
         
-        $periods = [
-            'year' => $diff->y,
-            'month' => $diff->m,
-            'day' => $diff->d,
-            'hour' => $diff->h,
-            'minute' => $diff->i,
-            'second' => $diff->s
-        ];
-        
-        foreach ($periods as $unit => $value) {
-            if ($value > 0) {
-                return "{$value} {$unit}" . ($value > 1 ? 's' : '') . ' ago';
+        if (empty($configs)) {
+            $basePath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
+            $configFiles = glob($basePath . '/config/*.php');
+            
+            foreach ($configFiles as $file) {
+                $name = pathinfo($file, PATHINFO_FILENAME);
+                $configs[$name] = require $file;
             }
         }
         
-        return 'just now';
-    }
-    
-    /**
-     * Sanitize input
-     */
-    public static function sanitize(string $input): string
-    {
-        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
-    }
-    
-    /**
-     * Validate email
-     */
-    public static function isValidEmail(string $email): bool
-    {
-        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
-    }
-    
-    /**
-     * Generate random string
-     */
-    public static function randomString(int $length = 32, string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string
-    {
-        $result = '';
-        $max = strlen($charset) - 1;
+        $keys = explode('.', $key);
+        $value = $configs;
         
-        for ($i = 0; $i < $length; $i++) {
-            $result .= $charset[random_int(0, $max)];
+        foreach ($keys as $k) {
+            if (is_array($value) && isset($value[$k])) {
+                $value = $value[$k];
+            } else {
+                return $default;
+            }
         }
         
-        return $result;
+        return $value;
     }
-    
-    /**
-     * Convert bytes to human readable size
-     */
-    public static function humanFileSize(int $bytes): string
+}
+
+if (!function_exists('env')) {
+    function env(string $key, $default = null)
     {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
-        $bytes /= pow(1024, $pow);
+        $value = getenv($key);
         
-        return round($bytes, 2) . ' ' . $units[$pow];
+        if ($value === false) {
+            return $default;
+        }
+        
+        // Convert boolean strings
+        if (strtolower($value) === 'true') {
+            return true;
+        }
+        
+        if (strtolower($value) === 'false') {
+            return false;
+        }
+        
+        // Convert numeric strings
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+        
+        return $value;
     }
-    
-    /**
-     * Check if request is AJAX
-     */
-    public static function isAjax(): bool
+}
+
+if (!function_exists('redirect')) {
+    function redirect(string $url, int $statusCode = 302): \Wizdam\Http\Response
     {
-        return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        return \Wizdam\Http\Response::redirect($url, $statusCode);
+    }
+}
+
+if (!function_exists('view')) {
+    function view(string $template, array $data = []): \Wizdam\Http\Response
+    {
+        return \Wizdam\Http\Response::view($template, $data);
+    }
+}
+
+if (!function_exists('json_response')) {
+    function json_response(array $data, int $statusCode = 200): \Wizdam\Http\Response
+    {
+        return \Wizdam\Http\Response::json($data, $statusCode);
+    }
+}
+
+if (!function_exists('error_response')) {
+    function error_response(string $message, int $statusCode = 400): \Wizdam\Http\Response
+    {
+        return \Wizdam\Http\Response::error($message, $statusCode);
+    }
+}
+
+if (!function_exists('auth')) {
+    function auth()
+    {
+        return \Wizdam\Core\App::getInstance()->getAuthService();
+    }
+}
+
+if (!function_exists('db')) {
+    function db()
+    {
+        return \Wizdam\Core\App::getInstance()->getDatabase();
+    }
+}
+
+if (!function_exists('queue')) {
+    function queue()
+    {
+        return \Wizdam\Core\App::getInstance()->getQueueManager();
+    }
+}
+
+if (!function_exists('api_client')) {
+    function api_client()
+    {
+        return \Wizdam\Core\App::getInstance()->getApiClient();
     }
 }
