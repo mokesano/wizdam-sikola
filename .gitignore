@@ -1,17 +1,3 @@
-# PHP Environment
-.env
-
-# Composer dependencies
-vendor/
-library/vendor/
-
-# Twig cache
-library/cache/
-
-# Upload hasil
-public/assets/images/resized/
-public/assets/pdf/compressed/
-
 # Logs
 logs
 *.log
