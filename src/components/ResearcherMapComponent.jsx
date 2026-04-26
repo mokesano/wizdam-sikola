@@ -1,296 +1,261 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useAppContext } from '../context/AppContext';
+
+/**
+ * Peta distribusi peneliti & institusi menggunakan Leaflet.js.
+ * Leaflet diload secara dynamic agar tidak break SSR/CRA tree-shaking.
+ *
+ * Tampilan dua mode:
+ *   - province  : CircleMarker per provinsi (radius ~ jumlah peneliti)
+ *   - institution: Marker per institusi (koordinat GPS)
+ */
+
+const Skeleton = ({ className = '' }) => <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
+
+// ── Warna berdasarkan skor dampak ─────────────────────────────────────────
+function scoreColor(score) {
+  if (score >= 80) return '#1d4ed8';
+  if (score >= 70) return '#059669';
+  if (score >= 60) return '#d97706';
+  return '#dc2626';
+}
+
+// ── Radius marker berdasarkan jumlah peneliti ─────────────────────────────
+function researcherRadius(count) {
+  return Math.max(6, Math.min(30, Math.sqrt(count ?? 1) * 1.2));
+}
 
 const ResearcherDistributionMap = () => {
-  // State
-  const [mapView, setMapView] = useState('province');
-  const [selectedField, setSelectedField] = useState('all');
-  const [selectedProvince, setSelectedProvince] = useState(null);
-  const [loading, setLoading] = useState(false);
-  
-  // Data untuk peta peneliti
-  const provinceResearcherData = [
-    { province: 'DKI Jakarta', researchers: 2584, avgImpact: 82.4, institutions: 58, topField: 'Teknologi Informasi', lat: -6.2, lng: 106.8 },
-    { province: 'Jawa Barat', researchers: 2150, avgImpact: 79.2, institutions: 72, topField: 'Teknik', lat: -6.9, lng: 107.6 },
-    { province: 'Jawa Timur', researchers: 1960, avgImpact: 77.5, institutions: 68, topField: 'Pertanian', lat: -7.5, lng: 112.7 },
-    { province: 'Jawa Tengah', researchers: 1845, avgImpact: 76.8, institutions: 65, topField: 'Pendidikan', lat: -7.1, lng: 110.4 },
-    { province: 'DI Yogyakarta', researchers: 1520, avgImpact: 81.2, institutions: 42, topField: 'Sosial Ekonomi', lat: -7.8, lng: 110.3 },
-    { province: 'Sumatera Utara', researchers: 950, avgImpact: 72.4, institutions: 34, topField: 'Kedokteran', lat: 3.5, lng: 98.7 },
-    { province: 'Sulawesi Selatan', researchers: 780, avgImpact: 71.5, institutions: 28, topField: 'Pertanian', lat: -5.1, lng: 119.4 },
-    { province: 'Bali', researchers: 640, avgImpact: 74.8, institutions: 18, topField: 'Pariwisata', lat: -8.4, lng: 115.1 },
-    { province: 'Sumatera Barat', researchers: 580, avgImpact: 70.2, institutions: 15, topField: 'Pertanian', lat: -0.9, lng: 100.3 },
-    { province: 'Kalimantan Timur', researchers: 420, avgImpact: 69.5, institutions: 12, topField: 'Lingkungan', lat: 0.5, lng: 116.4 }
-  ];
-  
-  const institutionData = [
-    { id: 1, name: 'Universitas Indonesia', province: 'DKI Jakarta', researchers: 587, avgImpact: 82.3, publications: 4250, topField: 'Teknologi Informasi', lat: -6.36, lng: 106.83 },
-    { id: 2, name: 'Institut Teknologi Bandung', province: 'Jawa Barat', researchers: 521, avgImpact: 80.7, publications: 3980, topField: 'Teknik', lat: -6.89, lng: 107.61 },
-    { id: 3, name: 'Universitas Gadjah Mada', province: 'DI Yogyakarta', researchers: 492, avgImpact: 79.8, publications: 3750, topField: 'Kedokteran', lat: -7.77, lng: 110.38 },
-    { id: 4, name: 'Institut Pertanian Bogor', province: 'Jawa Barat', researchers: 435, avgImpact: 77.2, publications: 3240, topField: 'Pertanian', lat: -6.56, lng: 106.72 },
-    { id: 5, name: 'Universitas Airlangga', province: 'Jawa Timur', researchers: 412, avgImpact: 78.5, publications: 3120, topField: 'Kedokteran', lat: -7.27, lng: 112.78 },
-    { id: 6, name: 'Universitas Hasanuddin', province: 'Sulawesi Selatan', researchers: 374, avgImpact: 74.2, publications: 2840, topField: 'Kesehatan', lat: -5.13, lng: 119.49 },
-    { id: 7, name: 'Universitas Diponegoro', province: 'Jawa Tengah', researchers: 356, avgImpact: 76.8, publications: 2650, topField: 'Teknik', lat: -7.05, lng: 110.44 },
-    { id: 8, name: 'Universitas Padjadjaran', province: 'Jawa Barat', researchers: 340, avgImpact: 77.9, publications: 2580, topField: 'Sosial', lat: -6.92, lng: 107.77 },
-    { id: 9, name: 'Universitas Brawijaya', province: 'Jawa Timur', researchers: 328, avgImpact: 76.3, publications: 2460, topField: 'Pertanian', lat: -7.95, lng: 112.61 },
-    { id: 10, name: 'Universitas Sumatera Utara', province: 'Sumatera Utara', researchers: 287, avgImpact: 74.7, publications: 2180, topField: 'Teknik', lat: 3.56, lng: 98.65 }
-  ];
-  
-  // Fungsi untuk mengubah tampilan peta
-  const toggleMapView = (view) => {
-    setLoading(true);
-    setMapView(view);
-    setTimeout(() => setLoading(false), 500); // Simulasi loading
-  };
-  
-  // Fungsi untuk memfilter data berdasarkan bidang
-  const filterByField = (field) => {
-    setSelectedField(field);
-    // Implementasi filter akan ditambahkan di sini
-  };
-  
-  // Komponen peta Indonesia interaktif
-  const IndonesiaMap = () => {
-    return (
-      <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center">
-        <div className="text-center p-4">
-          <p className="text-lg font-medium text-gray-700">Peta Interaktif Distribusi Peneliti Indonesia</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Di implementasi sebenarnya, komponen ini akan menampilkan:
-          </p>
-          <ul className="text-sm text-gray-500 text-left mt-2 space-y-1">
-            <li>• Peta Indonesia dengan data geolokasi peneliti</li>
-            <li>• Visualisasi heatmap sebaran peneliti</li>
-            <li>• Marker untuk lokasi institusi</li>
-            <li>• Popup detail saat mengklik wilayah</li>
-          </ul>
-        </div>
-      </div>
-    );
-  };
-  
+  const [mapView,          setMapView]          = useState('province');
+  const [selectedItem,     setSelectedItem]     = useState(null);
+  const [leafletReady,     setLeafletReady]     = useState(false);
+  const [leafletError,     setLeafletError]     = useState(null);
+
+  const mapRef        = useRef(null);  // DOM node
+  const leafletMapRef = useRef(null);  // L.Map instance
+  const layerRef      = useRef(null);  // LayerGroup
+
+  const { mapData, loading, errors, refetch } = useAppContext();
+
+  // Muat Leaflet lazily dan trigger map data load
+  useEffect(() => {
+    refetch.map();
+
+    import('leaflet')
+      .then(L => {
+        // Patch icon default Leaflet (broken dengan bundler)
+        delete L.Icon.Default.prototype._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+          iconUrl:       'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+          shadowUrl:     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        });
+        window._L = L;
+        setLeafletReady(true);
+      })
+      .catch(() => setLeafletError('Gagal memuat library peta.'));
+
+    // Inject Leaflet CSS
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id   = 'leaflet-css';
+      link.rel  = 'stylesheet';
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+      document.head.appendChild(link);
+    }
+  }, []);  // eslint-disable-line
+
+  // Inisialisasi peta saat Leaflet siap dan DOM container tersedia
+  useEffect(() => {
+    if (!leafletReady || !mapRef.current || leafletMapRef.current) return;
+    const L = window._L;
+    const map = L.map(mapRef.current, { zoomControl: true, scrollWheelZoom: false }).setView([-2.5, 118], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 18,
+    }).addTo(map);
+    leafletMapRef.current = map;
+    layerRef.current = L.layerGroup().addTo(map);
+  }, [leafletReady]);
+
+  // Render ulang markers setiap kali data atau mapView berubah
+  useEffect(() => {
+    if (!leafletMapRef.current || !window._L || !mapData) return;
+    const L = window._L;
+    layerRef.current.clearLayers();
+
+    if (mapView === 'province') {
+      (mapData.by_province ?? []).forEach(p => {
+        // Gunakan koordinat kasar tiap provinsi (dari institutions yang punya lat/lng)
+        const inst = (mapData.institutions ?? []).find(i => i.province === p.province && i.latitude);
+        if (!inst) return;
+        const circle = L.circleMarker([inst.latitude, inst.longitude], {
+          radius:      researcherRadius(p.researcher_count),
+          color:       scoreColor(p.avg_impact),
+          fillColor:   scoreColor(p.avg_impact),
+          fillOpacity: 0.65,
+          weight:      2,
+        }).bindPopup(`
+          <b>${p.province}</b><br>
+          Peneliti: ${Number(p.researcher_count).toLocaleString('id-ID')}<br>
+          Avg Wizdam Score: ${Number(p.avg_impact).toFixed(1)}<br>
+          Institusi: ${p.institution_count}
+        `);
+        circle.on('click', () => setSelectedItem({ ...p, _type: 'province' }));
+        layerRef.current.addLayer(circle);
+      });
+    } else {
+      (mapData.institutions ?? [])
+        .filter(i => i.latitude && i.longitude)
+        .forEach(inst => {
+          const marker = L.circleMarker([inst.latitude, inst.longitude], {
+            radius:      researcherRadius(inst.total_researchers),
+            color:       scoreColor(inst.wizdam_score),
+            fillColor:   scoreColor(inst.wizdam_score),
+            fillOpacity: 0.7,
+            weight:      2,
+          }).bindPopup(`
+            <b>${inst.name}</b><br>
+            ${inst.province}<br>
+            Peneliti: ${inst.total_researchers}<br>
+            Wizdam Score: ${inst.wizdam_score}
+          `);
+          marker.on('click', () => setSelectedItem({ ...inst, _type: 'institution' }));
+          layerRef.current.addLayer(marker);
+        });
+    }
+  }, [mapData, mapView]);
+
+  // Data chart: top provinsi
+  const provinceChartData = (mapData?.by_province ?? [])
+    .slice(0, 10)
+    .map(p => ({
+      province:        p.province,
+      researchers:     Number(p.researcher_count ?? 0),
+      avg_impact:      Number(p.avg_impact       ?? 0),
+    }));
+
+  const isLoadingMap = loading.map;
+
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
+      {/* Header + controls */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
         <h2 className="text-lg font-semibold">Peta Distribusi Peneliti Indonesia</h2>
-        <div className="flex flex-wrap gap-2">
-          <select 
-            className="border rounded px-2 py-1 text-sm"
-            value={selectedField}
-            onChange={(e) => filterByField(e.target.value)}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setMapView('province')}
+            className={`px-3 py-1 text-sm rounded ${mapView === 'province' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
           >
-            <option value="all">Semua Bidang</option>
-            <option value="ti">Teknologi Informasi</option>
-            <option value="med">Kedokteran</option>
-            <option value="agr">Pertanian</option>
-            <option value="eng">Teknik</option>
-            <option value="soc">Sosial Ekonomi</option>
-          </select>
-          
-          <div className="flex">
-            <button 
-              className={`px-3 py-1 text-sm rounded-l-md ${mapView === 'province' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-              onClick={() => toggleMapView('province')}
-            >
-              Provinsi
-            </button>
-            <button 
-              className={`px-3 py-1 text-sm rounded-r-md ${mapView === 'institution' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-              onClick={() => toggleMapView('institution')}
-            >
-              Institusi
-            </button>
-          </div>
+            Per Provinsi
+          </button>
+          <button
+            onClick={() => setMapView('institution')}
+            className={`px-3 py-1 text-sm rounded ${mapView === 'institution' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+          >
+            Per Institusi
+          </button>
         </div>
       </div>
-      
-      {/* Peta Interaktif */}
-      {loading ? (
-        <div className="flex justify-center items-center h-96">
-          <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-4 mb-3 text-xs text-gray-600">
+        <span>Ukuran lingkaran = jumlah peneliti</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-700 inline-block" /> Skor ≥ 80</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-600 inline-block" /> Skor 70–79</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-600 inline-block" /> Skor 60–69</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-600 inline-block" /> Skor &lt; 60</span>
+      </div>
+
+      {/* Map container */}
+      {leafletError ? (
+        <div className="h-96 flex items-center justify-center bg-gray-50 rounded text-red-500 text-sm">{leafletError}</div>
+      ) : isLoadingMap || !leafletReady ? (
+        <Skeleton className="h-96" />
+      ) : errors.map ? (
+        <div className="h-96 flex items-center justify-center bg-gray-50 rounded text-gray-400 text-sm">{errors.map}</div>
       ) : (
-        <IndonesiaMap />
+        <div ref={mapRef} className="h-96 rounded border border-gray-200 z-0" style={{ minHeight: 384 }} />
       )}
-      
-      {/* Statistik Peneliti */}
-      <div className="mt-6">
-        <h3 className="text-md font-semibold mb-4">
-          {mapView === 'province' ? 'Statistik Peneliti per Provinsi' : 'Statistik Peneliti per Institusi'}
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {mapView === 'province' ? 'Provinsi' : 'Institusi'}
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Jumlah Peneliti
-                </th>
-                {mapView === 'province' && (
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Jumlah Institusi
-                  </th>
-                )}
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Bidang Dominan
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rata-rata Dampak
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {mapView === 'province' ? (
-                provinceResearcherData.map((province, index) => (
-                  <tr 
-                    key={index} 
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setSelectedProvince(province.province)}
-                  >
-                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {province.province}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                      {province.researchers.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                      {province.institutions}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                      {province.topField}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                          <div 
-                            className="bg-blue-600 h-2.5 rounded-full" 
-                            style={{ width: `${province.avgImpact}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm font-medium text-gray-900">{province.avgImpact}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                institutionData.map((institution) => (
-                  <tr key={institution.id} className="hover:bg-gray-50 cursor-pointer">
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{institution.name}</div>
-                      <div className="text-xs text-gray-500">{institution.province}</div>
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                      {institution.researchers.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                      {institution.topField}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                          <div 
-                            className="bg-blue-600 h-2.5 rounded-full" 
-                            style={{ width: `${institution.avgImpact}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm font-medium text-gray-900">{institution.avgImpact}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+
+      <div className="mt-2 text-xs text-gray-400 text-right">
+        Peta: © OpenStreetMap contributors
       </div>
-      
-      {/* Grafik Distribusi Regional */}
-      <div className="mt-6">
-        <h3 className="text-md font-semibold mb-4">Distribusi Dampak Regional</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart
-            data={[
-              { region: 'Jawa', avgImpact: 78.5, researchers: 9524 },
-              { region: 'Sumatera', avgImpact: 72.4, researchers: 2845 },
-              { region: 'Sulawesi', avgImpact: 70.5, researchers: 1532 },
-              { region: 'Kalimantan', avgImpact: 68.2, researchers: 965 },
-              { region: 'Bali & NT', avgImpact: 74.8, researchers: 842 },
-              { region: 'Maluku & Papua', avgImpact: 65.3, researchers: 398 }
-            ]}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="region" />
-            <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-            <Tooltip />
-            <Legend />
-            <Bar yAxisId="left" dataKey="researchers" fill="#8884d8" name="Jumlah Peneliti" />
-            <Bar yAxisId="right" dataKey="avgImpact" fill="#82ca9d" name="Rata-rata Dampak" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      
-      {/* Detail Provinsi yang Dipilih */}
-      {selectedProvince && (
-        <div className="mt-6 bg-blue-50 p-4 rounded-lg">
-          <div className="flex justify-between items-start">
-            <h3 className="text-md font-semibold">Detail Provinsi: {selectedProvince}</h3>
-            <button 
-              className="text-gray-500 hover:text-gray-700"
-              onClick={() => setSelectedProvince(null)}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
+
+      {/* Info panel item yang dipilih */}
+      {selectedItem && (
+        <div className="mt-4 bg-blue-50 p-4 rounded-lg">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="font-semibold text-gray-800">
+              {selectedItem._type === 'province' ? selectedItem.province : selectedItem.name}
+            </h3>
+            <button onClick={() => setSelectedItem(null)} className="text-gray-400 hover:text-gray-600">✕</button>
           </div>
-          
-          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">
-                <b>Top 5 Institusi:</b>
-              </p>
-              <ul className="mt-1 text-sm">
-                {institutionData
-                  .filter(inst => inst.province === selectedProvince)
-                  .slice(0, 5)
-                  .map(institution => (
-                    <li key={institution.id} className="flex justify-between py-1">
-                      <span>{institution.name}</span>
-                      <span className="font-medium">{institution.researchers} peneliti</span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">
-                <b>Statistik Bidang Penelitian:</b>
-              </p>
-              <div className="mt-1 space-y-2">
-                <div className="text-sm flex justify-between">
-                  <span>Teknologi Informasi</span>
-                  <span>32%</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            {selectedItem._type === 'province' ? (
+              <>
+                <div className="bg-white rounded p-2 shadow-sm text-center">
+                  <p className="text-xs text-gray-500">Peneliti</p>
+                  <p className="text-lg font-bold">{Number(selectedItem.researcher_count ?? 0).toLocaleString('id-ID')}</p>
                 </div>
-                <div className="text-sm flex justify-between">
-                  <span>Kedokteran</span>
-                  <span>28%</span>
+                <div className="bg-white rounded p-2 shadow-sm text-center">
+                  <p className="text-xs text-gray-500">Institusi</p>
+                  <p className="text-lg font-bold">{selectedItem.institution_count ?? 0}</p>
                 </div>
-                <div className="text-sm flex justify-between">
-                  <span>Teknik</span>
-                  <span>22%</span>
+                <div className="bg-white rounded p-2 shadow-sm text-center">
+                  <p className="text-xs text-gray-500">Avg Wizdam Score</p>
+                  <p className="text-lg font-bold">{Number(selectedItem.avg_impact ?? 0).toFixed(1)}</p>
                 </div>
-                <div className="text-sm flex justify-between">
-                  <span>Sosial Ekonomi</span>
-                  <span>18%</span>
+              </>
+            ) : (
+              <>
+                <div className="bg-white rounded p-2 shadow-sm text-center">
+                  <p className="text-xs text-gray-500">Provinsi</p>
+                  <p className="text-sm font-semibold">{selectedItem.province}</p>
                 </div>
-              </div>
-            </div>
+                <div className="bg-white rounded p-2 shadow-sm text-center">
+                  <p className="text-xs text-gray-500">Peneliti</p>
+                  <p className="text-lg font-bold">{selectedItem.total_researchers}</p>
+                </div>
+                <div className="bg-white rounded p-2 shadow-sm text-center">
+                  <p className="text-xs text-gray-500">Publikasi</p>
+                  <p className="text-lg font-bold">{selectedItem.total_publications}</p>
+                </div>
+                <div className="bg-white rounded p-2 shadow-sm text-center">
+                  <p className="text-xs text-gray-500">Wizdam Score</p>
+                  <p className="text-lg font-bold">{selectedItem.wizdam_score}</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
+      )}
+
+      {/* Chart distribusi provinsi */}
+      {provinceChartData.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-md font-semibold mb-3">Top 10 Provinsi — Distribusi Peneliti</h3>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={provinceChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="province" tick={{ fontSize: 10 }} angle={-20} textAnchor="end" height={50} />
+              <YAxis yAxisId="left"  orientation="left"  stroke="#8884d8" />
+              <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+              <Tooltip />
+              <Legend />
+              <Bar yAxisId="left"  dataKey="researchers" fill="#8884d8" name="Jumlah Peneliti" />
+              <Bar yAxisId="right" dataKey="avg_impact"  fill="#82ca9d" name="Avg Wizdam Score" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Data kosong fallback */}
+      {!isLoadingMap && leafletReady && !errors.map && (mapData?.by_province ?? []).length === 0 && (
+        <p className="text-center text-gray-400 text-sm mt-4">
+          Data peta belum tersedia. Pastikan database sudah diisi dan endpoint <code>/api/v1/institutions/map</code> berjalan.
+        </p>
       )}
     </div>
   );

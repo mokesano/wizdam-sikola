@@ -118,5 +118,105 @@ return function (App $app): Router {
         return $handler->receiveWithResponse($request);
     });
 
+    // ─── REST API v1 ──────────────────────────────────────────────────────────
+    // Semua endpoint di bawah ini mengembalikan JSON dan mendukung CORS
+    // sehingga React frontend dapat memanggilnya langsung.
+
+    // Stats — ringkasan dashboard
+    $router->get('/api/v1/stats', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\StatsApiHandler();
+        return $handler->index($request);
+    });
+
+    // OPTIONS preflight untuk semua /api/v1/*
+    $router->any('/api/v1/{path}', function (Request $request) {
+        if ($request->method === 'OPTIONS') {
+            $cors = new \Wizdam\Http\Middleware\CorsMiddleware();
+            $cors->sendCorsHeaders();
+            return new \Wizdam\Http\Response('', 204);
+        }
+        return \Wizdam\Http\Response::json(['success' => false, 'message' => 'Not found'], 404);
+    });
+
+    // Researchers
+    $router->get('/api/v1/researchers', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\ResearcherApiHandler();
+        return $handler->index($request);
+    });
+
+    $router->get('/api/v1/researchers/top', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\ResearcherApiHandler();
+        return $handler->top($request);
+    });
+
+    $router->get('/api/v1/researchers/{orcid}', function (Request $request, string $orcid) {
+        $handler = new \Wizdam\Handlers\Api\ResearcherApiHandler();
+        return $handler->show($request, $orcid);
+    });
+
+    // Articles / Publications
+    $router->get('/api/v1/articles', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\ArticleApiHandler();
+        return $handler->index($request);
+    });
+
+    $router->get('/api/v1/articles/top', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\ArticleApiHandler();
+        return $handler->top($request);
+    });
+
+    $router->get('/api/v1/articles/trends', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\ArticleApiHandler();
+        return $handler->trends($request);
+    });
+
+    $router->get('/api/v1/articles/{id:\d+}', function (Request $request, int $id) {
+        $handler = new \Wizdam\Handlers\Api\ArticleApiHandler();
+        return $handler->show($request, $id);
+    });
+
+    // Institutions
+    $router->get('/api/v1/institutions', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\InstitutionApiHandler();
+        return $handler->index($request);
+    });
+
+    $router->get('/api/v1/institutions/map', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\InstitutionApiHandler();
+        return $handler->map($request);
+    });
+
+    $router->get('/api/v1/institutions/{id:\d+}', function (Request $request, int $id) {
+        $handler = new \Wizdam\Handlers\Api\InstitutionApiHandler();
+        return $handler->show($request, $id);
+    });
+
+    // Impact Scores
+    $router->get('/api/v1/impact-scores/averages/{type}', function (Request $request, string $type) {
+        $handler = new \Wizdam\Handlers\Api\ImpactScoreApiHandler();
+        return $handler->averages($request, $type);
+    });
+
+    $router->get('/api/v1/impact-scores/{type}/{id:\d+}', function (Request $request, string $type, int $id) {
+        $handler = new \Wizdam\Handlers\Api\ImpactScoreApiHandler();
+        return $handler->show($request, $type, $id);
+    });
+
+    $router->post('/api/v1/impact-scores/{type}/{id:\d+}/calculate', function (Request $request, string $type, int $id) {
+        $handler = new \Wizdam\Handlers\Api\ImpactScoreApiHandler();
+        return $handler->calculate($request, $type, $id);
+    });
+
+    $router->get('/api/v1/impact-scores/{type}/{id:\d+}/history', function (Request $request, string $type, int $id) {
+        $handler = new \Wizdam\Handlers\Api\ImpactScoreApiHandler();
+        return $handler->history($request, $type, $id);
+    });
+
+    // SDG Classification
+    $router->post('/api/v1/sdg/classify', function (Request $request) {
+        $handler = new \Wizdam\Handlers\Api\ImpactScoreApiHandler();
+        return $handler->classifySdg($request);
+    });
+
     return $router;
 };
