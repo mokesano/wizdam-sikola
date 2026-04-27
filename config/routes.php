@@ -24,25 +24,41 @@ return function (App $app): Router {
 
     // ─── HELPER: render React shell ───────────────────────────────────────────
     $reactShell = function (Request $request) use ($app): Response {
-        $twig       = $app->get(\Twig\Environment::class);
-        $authSvc    = $app->get(\Wizdam\Services\AuthService::class);
-        $isDev      = ($_ENV['APP_ENV'] ?? 'production') === 'development';
-        $apiUrl     = $_ENV['REACT_APP_API_URL'] ?? '/api/v1';
+        // P1-fix: gunakan accessor yang ada di App, bukan $app->get() yang tidak ada
+        $twig   = $app->getTwig();
+        $auth   = $app->getAuth();
+        $isDev  = ($_ENV['APP_ENV'] ?? 'production') === 'development';
+        $apiUrl = $_ENV['VITE_API_URL'] ?? $_ENV['REACT_APP_API_URL'] ?? '/api/v1';
 
         // Baca Vite manifest (hanya production)
-        $manifest = [];
+        $manifest     = [];
         $manifestPath = BASE_PATH . '/public/app/.vite/manifest.json';
         if (!$isDev && file_exists($manifestPath)) {
             $manifest = json_decode(file_get_contents($manifestPath), true) ?? [];
         }
 
+        // Bangun currentUser dari AuthManager (menghindari instansiasi AuthService terpisah)
+        $currentUser = null;
+        if ($auth->isLoggedIn()) {
+            $userId = $auth->getUserId();
+            try {
+                $row = \Wizdam\Database\DBConnector::getInstance()->fetchOne(
+                    'SELECT id, email, full_name, role FROM users WHERE id = ? AND is_active = 1',
+                    [$userId]
+                );
+                $currentUser = $row ?: ['id' => $userId];
+            } catch (\Throwable) {
+                $currentUser = ['id' => $userId];
+            }
+        }
+
         $html = $twig->render('layouts/react_shell.twig', [
-            'vite_dev'    => $isDev,
+            'vite_dev'      => $isDev,
             'vite_manifest' => $manifest,
-            'api_url'     => $apiUrl,
-            'current_user' => $authSvc->currentUser(),
-            'csrf_token'  => bin2hex(random_bytes(16)),
-            'app_path'    => '/app',
+            'api_url'       => $apiUrl,
+            'current_user'  => $currentUser,
+            'csrf_token'    => bin2hex(random_bytes(16)),
+            'app_path'      => '/app',
         ]);
 
         return Response::html($html);
@@ -98,8 +114,9 @@ return function (App $app): Router {
     // Semua sub-path /app/* dilayani oleh shell yang sama; React Router
     // menangani navigasi di sisi client.
 
-    $router->get('/app',         $reactShell);
-    $router->get('/app/{path}',  $reactShell);
+    // P1-fix: {path:.+} catch-all agar deep links seperti /app/researchers/123 tidak 404
+    $router->get('/app',           $reactShell);
+    $router->get('/app/{path:.+}', $reactShell);
 
     // ─── PROTECTED ROUTES (Requires Login) ────────────────────────────────────
 
