@@ -18,6 +18,7 @@
     "autoload": {
         "psr-4": {
             "Wizdam\\App\\": "app/",
+            "Wizdam\\": "app/",
             "Wizdam\\Library\\": "library/"
         },
         "files": [

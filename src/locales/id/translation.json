@@ -1,0 +1,182 @@
+{
+  "app": {
+    "name": "Wizdam AI-Sikola",
+    "tagline": "Platform Analisis Dampak Penelitian Indonesia"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "researchers": "Peneliti",
+    "articles": "Artikel",
+    "institutions": "Institusi",
+    "map": "Peta",
+    "trends": "Tren",
+    "tools": "Alat",
+    "login": "Masuk",
+    "logout": "Keluar",
+    "profile": "Profil Saya",
+    "admin": "Panel Admin"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "not_found": "Data tidak ditemukan",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Ubah",
+    "view": "Lihat",
+    "search": "Cari",
+    "filter": "Filter",
+    "all": "Semua",
+    "year": "Tahun",
+    "total": "Total",
+    "average": "Rata-rata",
+    "export": "Ekspor",
+    "close": "Tutup",
+    "more": "Selengkapnya",
+    "back": "Kembali"
+  },
+  "dashboard": {
+    "title": "Dashboard Utama",
+    "stats": {
+      "total_researchers": "Total Peneliti",
+      "total_articles": "Total Artikel",
+      "total_institutions": "Total Institusi",
+      "avg_impact_score": "Rata-rata Skor Dampak"
+    },
+    "top_researchers": "Peneliti Teratas",
+    "top_articles": "Artikel Teratas",
+    "recent_trends": "Tren Terkini"
+  },
+  "researcher": {
+    "profile": "Profil Peneliti",
+    "full_name": "Nama Lengkap",
+    "orcid": "ORCID",
+    "institution": "Institusi",
+    "position": "Jabatan",
+    "field": "Bidang Riset",
+    "h_index": "h-index",
+    "citations": "Sitasi",
+    "articles": "Artikel",
+    "impact_score": "Skor Dampak",
+    "sdg_tags": "Tag SDG",
+    "score_trend": "Tren Skor (12 Bulan)",
+    "pillar_breakdown": "Rincian 4 Pilar",
+    "recent_articles": "Artikel Terbaru",
+    "not_found": "Peneliti tidak ditemukan"
+  },
+  "article": {
+    "title": "Judul",
+    "journal": "Jurnal",
+    "year": "Tahun Terbit",
+    "citations": "Sitasi",
+    "impact_score": "Skor Dampak",
+    "doi": "DOI",
+    "authors": "Penulis",
+    "abstract": "Abstrak",
+    "sdg_tags": "Tag SDG",
+    "not_found": "Artikel tidak ditemukan"
+  },
+  "institution": {
+    "name": "Nama Institusi",
+    "type": "Jenis",
+    "province": "Provinsi",
+    "city": "Kota",
+    "researchers": "Peneliti",
+    "articles": "Artikel",
+    "impact_score": "Skor Dampak",
+    "not_found": "Institusi tidak ditemukan"
+  },
+  "impact_score": {
+    "title": "Wizdam Impact Score",
+    "composite": "Skor Komposit",
+    "pillar_academic": "Akademik",
+    "pillar_social": "Sosial",
+    "pillar_economic": "Ekonomi",
+    "pillar_sdg": "SDG",
+    "weights": "Bobot Kalkulasi",
+    "calculated_at": "Dihitung Pada",
+    "recalculate": "Hitung Ulang",
+    "recalculating": "Sedang Menghitung...",
+    "not_available": "Skor belum tersedia",
+    "trigger_calculate": "Klik \"Hitung Ulang\" untuk memulai kalkulasi"
+  },
+  "sdg": {
+    "title": "Klasifikasi SDG",
+    "classify": "Klasifikasikan",
+    "classifying": "Mengklasifikasikan...",
+    "label_1":  "Tanpa Kemiskinan",
+    "label_2":  "Tanpa Kelaparan",
+    "label_3":  "Kehidupan Sehat dan Sejahtera",
+    "label_4":  "Pendidikan Berkualitas",
+    "label_5":  "Kesetaraan Gender",
+    "label_6":  "Air Bersih dan Sanitasi",
+    "label_7":  "Energi Bersih dan Terjangkau",
+    "label_8":  "Pekerjaan Layak dan Pertumbuhan Ekonomi",
+    "label_9":  "Industri, Inovasi, dan Infrastruktur",
+    "label_10": "Berkurangnya Kesenjangan",
+    "label_11": "Kota dan Komunitas Berkelanjutan",
+    "label_12": "Konsumsi dan Produksi yang Bertanggung Jawab",
+    "label_13": "Penanganan Perubahan Iklim",
+    "label_14": "Ekosistem Lautan",
+    "label_15": "Ekosistem Daratan",
+    "label_16": "Perdamaian, Keadilan, dan Kelembagaan yang Tangguh",
+    "label_17": "Kemitraan untuk Mencapai Tujuan"
+  },
+  "map": {
+    "title": "Peta Persebaran Peneliti",
+    "loading": "Memuat peta...",
+    "researchers_in": "Peneliti di {{location}}",
+    "click_for_detail": "Klik untuk detail"
+  },
+  "auth": {
+    "login_title": "Masuk ke Wizdam",
+    "login_with_orcid": "Masuk dengan ORCID",
+    "login_description": "Gunakan akun ORCID Anda untuk masuk ke platform",
+    "logout_confirm": "Apakah Anda yakin ingin keluar?",
+    "unauthorized": "Anda tidak memiliki izin untuk mengakses halaman ini"
+  },
+  "api_key": {
+    "title": "API Key",
+    "generate": "Buat API Key",
+    "revoke": "Cabut API Key",
+    "copied": "Disalin!",
+    "copy": "Salin",
+    "warning": "API Key hanya ditampilkan sekali. Simpan dengan aman.",
+    "format_hint": "Format: wz_{user_id}_{timestamp}_{hmac16}",
+    "active_key": "Key Aktif",
+    "no_key": "Belum ada API Key",
+    "created_at": "Dibuat Pada"
+  },
+  "admin": {
+    "title": "Panel Admin",
+    "analytics": "Analitik Platform",
+    "weight_config": "Konfigurasi Bobot",
+    "users": "Manajemen Pengguna",
+    "api_logs": "Log API",
+    "save_weights": "Simpan Bobot",
+    "weights_saved": "Bobot berhasil disimpan"
+  },
+  "tools": {
+    "image_resizer": {
+      "title": "Image Resizer",
+      "upload": "Unggah Gambar",
+      "resize": "Ubah Ukuran",
+      "download": "Unduh Hasil"
+    },
+    "pdf_compress": {
+      "title": "PDF Compressor",
+      "upload": "Unggah PDF",
+      "compress": "Kompres",
+      "download": "Unduh Hasil"
+    }
+  },
+  "errors": {
+    "404_title": "Halaman Tidak Ditemukan",
+    "404_message": "Halaman yang Anda cari tidak ada atau telah dipindahkan.",
+    "500_title": "Terjadi Kesalahan Server",
+    "500_message": "Kami mengalami masalah teknis. Silakan coba lagi.",
+    "network": "Gagal terhubung ke server. Periksa koneksi internet Anda.",
+    "api_timeout": "Permintaan melebihi batas waktu. Silakan coba lagi."
+  }
+}

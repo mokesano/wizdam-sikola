@@ -8,6 +8,8 @@ export default defineConfig({
   build: {
     outDir: 'public/app',
     emptyOutDir: true,
+    // P1-fix: aktifkan manifest.json agar react_shell.twig bisa load hashed filenames
+    manifest: true,
     rollupOptions: {
       output: {
         // Hash-based filenames untuk cache busting

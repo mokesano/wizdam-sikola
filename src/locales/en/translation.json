@@ -1,0 +1,182 @@
+{
+  "app": {
+    "name": "Wizdam AI-Sikola",
+    "tagline": "Indonesia Research Impact Analysis Platform"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "researchers": "Researchers",
+    "articles": "Articles",
+    "institutions": "Institutions",
+    "map": "Map",
+    "trends": "Trends",
+    "tools": "Tools",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "My Profile",
+    "admin": "Admin Panel"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "not_found": "Data not found",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "year": "Year",
+    "total": "Total",
+    "average": "Average",
+    "export": "Export",
+    "close": "Close",
+    "more": "More",
+    "back": "Back"
+  },
+  "dashboard": {
+    "title": "Main Dashboard",
+    "stats": {
+      "total_researchers": "Total Researchers",
+      "total_articles": "Total Articles",
+      "total_institutions": "Total Institutions",
+      "avg_impact_score": "Average Impact Score"
+    },
+    "top_researchers": "Top Researchers",
+    "top_articles": "Top Articles",
+    "recent_trends": "Recent Trends"
+  },
+  "researcher": {
+    "profile": "Researcher Profile",
+    "full_name": "Full Name",
+    "orcid": "ORCID",
+    "institution": "Institution",
+    "position": "Position",
+    "field": "Research Field",
+    "h_index": "h-index",
+    "citations": "Citations",
+    "articles": "Articles",
+    "impact_score": "Impact Score",
+    "sdg_tags": "SDG Tags",
+    "score_trend": "Score Trend (12 Months)",
+    "pillar_breakdown": "4-Pillar Breakdown",
+    "recent_articles": "Recent Articles",
+    "not_found": "Researcher not found"
+  },
+  "article": {
+    "title": "Title",
+    "journal": "Journal",
+    "year": "Publication Year",
+    "citations": "Citations",
+    "impact_score": "Impact Score",
+    "doi": "DOI",
+    "authors": "Authors",
+    "abstract": "Abstract",
+    "sdg_tags": "SDG Tags",
+    "not_found": "Article not found"
+  },
+  "institution": {
+    "name": "Institution Name",
+    "type": "Type",
+    "province": "Province",
+    "city": "City",
+    "researchers": "Researchers",
+    "articles": "Articles",
+    "impact_score": "Impact Score",
+    "not_found": "Institution not found"
+  },
+  "impact_score": {
+    "title": "Wizdam Impact Score",
+    "composite": "Composite Score",
+    "pillar_academic": "Academic",
+    "pillar_social": "Social",
+    "pillar_economic": "Economic",
+    "pillar_sdg": "SDG",
+    "weights": "Calculation Weights",
+    "calculated_at": "Calculated At",
+    "recalculate": "Recalculate",
+    "recalculating": "Calculating...",
+    "not_available": "Score not yet available",
+    "trigger_calculate": "Click \"Recalculate\" to start calculation"
+  },
+  "sdg": {
+    "title": "SDG Classification",
+    "classify": "Classify",
+    "classifying": "Classifying...",
+    "label_1":  "No Poverty",
+    "label_2":  "Zero Hunger",
+    "label_3":  "Good Health and Well-being",
+    "label_4":  "Quality Education",
+    "label_5":  "Gender Equality",
+    "label_6":  "Clean Water and Sanitation",
+    "label_7":  "Affordable and Clean Energy",
+    "label_8":  "Decent Work and Economic Growth",
+    "label_9":  "Industry, Innovation and Infrastructure",
+    "label_10": "Reduced Inequalities",
+    "label_11": "Sustainable Cities and Communities",
+    "label_12": "Responsible Consumption and Production",
+    "label_13": "Climate Action",
+    "label_14": "Life Below Water",
+    "label_15": "Life on Land",
+    "label_16": "Peace, Justice and Strong Institutions",
+    "label_17": "Partnerships for the Goals"
+  },
+  "map": {
+    "title": "Researcher Distribution Map",
+    "loading": "Loading map...",
+    "researchers_in": "Researchers in {{location}}",
+    "click_for_detail": "Click for details"
+  },
+  "auth": {
+    "login_title": "Sign in to Wizdam",
+    "login_with_orcid": "Sign in with ORCID",
+    "login_description": "Use your ORCID account to sign in to the platform",
+    "logout_confirm": "Are you sure you want to log out?",
+    "unauthorized": "You don't have permission to access this page"
+  },
+  "api_key": {
+    "title": "API Key",
+    "generate": "Generate API Key",
+    "revoke": "Revoke API Key",
+    "copied": "Copied!",
+    "copy": "Copy",
+    "warning": "API Key is shown only once. Store it safely.",
+    "format_hint": "Format: wz_{user_id}_{timestamp}_{hmac16}",
+    "active_key": "Active Key",
+    "no_key": "No API Key yet",
+    "created_at": "Created At"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "analytics": "Platform Analytics",
+    "weight_config": "Weight Configuration",
+    "users": "User Management",
+    "api_logs": "API Logs",
+    "save_weights": "Save Weights",
+    "weights_saved": "Weights saved successfully"
+  },
+  "tools": {
+    "image_resizer": {
+      "title": "Image Resizer",
+      "upload": "Upload Image",
+      "resize": "Resize",
+      "download": "Download Result"
+    },
+    "pdf_compress": {
+      "title": "PDF Compressor",
+      "upload": "Upload PDF",
+      "compress": "Compress",
+      "download": "Download Result"
+    }
+  },
+  "errors": {
+    "404_title": "Page Not Found",
+    "404_message": "The page you're looking for doesn't exist or has been moved.",
+    "500_title": "Server Error",
+    "500_message": "We're experiencing technical difficulties. Please try again.",
+    "network": "Failed to connect to server. Check your internet connection.",
+    "api_timeout": "Request timed out. Please try again."
+  }
+}

@@ -8,18 +8,19 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
 /**
- * Mengecek status indeksasi jurnal/artikel di Scopus, SINTA, dan WoS
- * melalui Sangia API atau langsung ke sumber.
+ * Mengecek status indeksasi jurnal/artikel di Scopus, SINTA, dan WoS.
+ * Scopus: langsung ke Elsevier API.
+ * SINTA/WoS: melalui SangiaGateway (X-API-Key, /api/v1/...).
  */
 class IndexingIntegrator
 {
-    private Client $http;
+    private SangiaGateway $gateway;
     private array $apiCfg;
 
     public function __construct()
     {
-        $this->apiCfg = require BASE_PATH . '/config/api.php';
-        $this->http   = new Client(['timeout' => 20]);
+        $this->apiCfg  = require BASE_PATH . '/config/api.php';
+        $this->gateway = new SangiaGateway();
     }
 
     /**
@@ -40,26 +41,27 @@ class IndexingIntegrator
     {
         $key = $this->apiCfg['scopus']['api_key'] ?? '';
         if (!$key) {
-            return ['indexed' => false, 'error' => 'API key tidak dikonfigurasi'];
+            return ['indexed' => false, 'error' => 'Scopus API key tidak dikonfigurasi'];
         }
 
         try {
-            $response = $this->http->get(
+            $http     = new Client(['timeout' => 20]);
+            $response = $http->get(
                 $this->apiCfg['scopus']['base_url'] . '/serial/title/issn/' . urlencode($issn),
                 ['headers' => ['X-ELS-APIKey' => $key, 'Accept' => 'application/json']]
             );
 
-            $data   = json_decode((string) $response->getBody(), true);
-            $entry  = $data['serial-metadata-response']['entry'][0] ?? null;
+            $data  = json_decode((string) $response->getBody(), true);
+            $entry = $data['serial-metadata-response']['entry'][0] ?? null;
 
             if (!$entry || isset($entry['error'])) {
                 return ['indexed' => false];
             }
 
             return [
-                'indexed'  => true,
-                'sjr'      => $entry['SJRList']['SJR'][0]['$'] ?? null,
-                'snip'     => $entry['SNIPList']['SNIP'][0]['$'] ?? null,
+                'indexed'    => true,
+                'sjr'        => $entry['SJRList']['SJR'][0]['$'] ?? null,
+                'snip'       => $entry['SNIPList']['SNIP'][0]['$'] ?? null,
                 'cite_score' => $entry['citeScoreYearInfoList']['citeScoreCurrentMetric'] ?? null,
                 'publisher'  => $entry['dc:publisher'] ?? null,
             ];
@@ -71,44 +73,26 @@ class IndexingIntegrator
 
     private function checkSinta(string $issn): array
     {
-        // SINTA tidak memiliki API publik resmi; gunakan cache Sangia
-        try {
-            $response = $this->http->get(
-                $this->apiCfg['sangia']['base_url'] . '/v1/indexing/sinta',
-                [
-                    'query'   => ['issn' => $issn],
-                    'headers' => [
-                        'Authorization' => 'Bearer ' . $this->apiCfg['sangia']['api_key'],
-                        'Accept'        => 'application/json',
-                    ],
-                ]
-            );
-
-            return json_decode((string) $response->getBody(), true) ?? ['indexed' => false];
-
-        } catch (GuzzleException $e) {
-            return ['indexed' => false, 'error' => $e->getMessage()];
+        // SINTA tidak memiliki API publik resmi; gunakan cache Sangia (/api/v1/sinta/score)
+        $result = $this->gateway->getSintaScore($issn);
+        if (($result['status'] ?? '') !== 'success') {
+            return ['indexed' => false, 'error' => $result['message'] ?? 'Sangia error'];
         }
+        return array_merge(['indexed' => true], $result['data'] ?? []);
     }
 
     private function checkWos(string $issn): array
     {
-        try {
-            $response = $this->http->get(
-                $this->apiCfg['sangia']['base_url'] . '/v1/indexing/wos',
-                [
-                    'query'   => ['issn' => $issn],
-                    'headers' => [
-                        'Authorization' => 'Bearer ' . $this->apiCfg['sangia']['api_key'],
-                        'Accept'        => 'application/json',
-                    ],
-                ]
-            );
-
-            return json_decode((string) $response->getBody(), true) ?? ['indexed' => false];
-
-        } catch (GuzzleException $e) {
-            return ['indexed' => false, 'error' => $e->getMessage()];
+        // WoS melalui Sangia endpoint journal/metrics (source=wos)
+        $result = $this->gateway->getJournalMetrics($issn);
+        if (($result['status'] ?? '') !== 'success') {
+            return ['indexed' => false, 'error' => $result['message'] ?? 'Sangia error'];
         }
+        $data = $result['data'] ?? [];
+        return [
+            'indexed'    => !empty($data['wos']),
+            'wos_quartile' => $data['wos']['quartile']   ?? null,
+            'wos_if'      => $data['wos']['impact_factor'] ?? null,
+        ];
     }
 }

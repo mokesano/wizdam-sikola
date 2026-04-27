@@ -7,10 +7,10 @@ namespace Wizdam\Database\Models;
 use Wizdam\Database\DBConnector;
 
 /**
- * Merepresentasikan tabel `researchers`.
- *
- * Kolom: id, orcid, name, affiliation_id, sinta_id, scopus_id,
- *        h_index, total_citations, impact_score, created_at, updated_at
+ * Tabel `researchers` — field sesuai database_schema_full.sql:
+ *   id, orcid_id, full_name, institution_id, sinta_id, scopus_id,
+ *   h_index, total_citations, wizdam_score, position_title,
+ *   research_field, biography, created_at, updated_at
  */
 class ResearcherModel
 {
@@ -26,8 +26,8 @@ class ResearcherModel
         return $this->db->fetchOne(
             'SELECT r.*, i.name AS institution_name
              FROM researchers r
-             LEFT JOIN institutions i ON r.affiliation_id = i.id
-             WHERE r.orcid = ?',
+             LEFT JOIN institutions i ON r.institution_id = i.id
+             WHERE r.orcid_id = ?',
             [$orcid]
         );
     }
@@ -37,26 +37,28 @@ class ResearcherModel
         return $this->db->fetchOne(
             'SELECT r.*, i.name AS institution_name
              FROM researchers r
-             LEFT JOIN institutions i ON r.affiliation_id = i.id
+             LEFT JOIN institutions i ON r.institution_id = i.id
              WHERE r.id = ?',
             [$id]
         );
     }
 
-    /** Ambil daftar peneliti dengan skor dampak tertinggi. */
+    /** Ambil daftar peneliti dengan wizdam_score tertinggi. */
     public function getTopByImpact(int $limit = 20, string $field = 'all'): array
     {
-        $sql = 'SELECT r.*, i.name AS institution_name
-                FROM researchers r
-                LEFT JOIN institutions i ON r.affiliation_id = i.id';
-
+        $sql    = 'SELECT r.id, r.orcid_id, r.full_name, r.sinta_id, r.h_index,
+                          r.total_citations, r.wizdam_score, r.position_title,
+                          r.research_field, i.name AS institution_name
+                   FROM researchers r
+                   LEFT JOIN institutions i ON r.institution_id = i.id';
         $params = [];
+
         if ($field !== 'all') {
             $sql     .= ' WHERE r.research_field = ?';
             $params[] = $field;
         }
 
-        $sql .= ' ORDER BY r.impact_score DESC LIMIT ?';
+        $sql     .= ' ORDER BY r.wizdam_score DESC LIMIT ?';
         $params[] = $limit;
 
         return $this->db->fetchAll($sql, $params);
@@ -66,21 +68,25 @@ class ResearcherModel
     public function search(string $query, int $limit = 30): array
     {
         return $this->db->fetchAll(
-            'SELECT r.id, r.orcid, r.name, r.impact_score, i.name AS institution_name
+            'SELECT r.id, r.orcid_id, r.full_name, r.wizdam_score, i.name AS institution_name
              FROM researchers r
-             LEFT JOIN institutions i ON r.affiliation_id = i.id
-             WHERE r.name LIKE ?
-             ORDER BY r.impact_score DESC
+             LEFT JOIN institutions i ON r.institution_id = i.id
+             WHERE r.full_name LIKE ?
+             ORDER BY r.wizdam_score DESC
              LIMIT ?',
             ['%' . $query . '%', $limit]
         );
     }
 
+    /**
+     * Upsert berdasarkan orcid_id.
+     * Kolom dalam $data harus menggunakan nama field schema_full.
+     */
     public function upsert(array $data): string
     {
         $existing = $this->db->fetchOne(
-            'SELECT id FROM researchers WHERE orcid = ?',
-            [$data['orcid']]
+            'SELECT id FROM researchers WHERE orcid_id = ?',
+            [$data['orcid_id']]
         );
 
         if ($existing) {

@@ -7,6 +7,7 @@ namespace Wizdam\Handlers\Api;
 use Wizdam\Database\Models\ImpactScoreModel;
 use Wizdam\Services\SangiaApi\ImpactScoreClient;
 use Wizdam\Services\SangiaApi\SdgIntegrator;
+use Wizdam\Services\SangiaApi\WeightConfigService;
 use Wizdam\Http\Middleware\CorsMiddleware;
 use Wizdam\Http\Request;
 use Wizdam\Http\Response;
@@ -177,7 +178,7 @@ class ImpactScoreApiHandler
             'composite'      => round((float) ($score['composite_score']  ?? 0), 2),
             'sdg_tags'       => json_decode((string) ($score['sdg_tags'] ?? '[]'), true) ?? [],
             'calculated_at'  => $score['calculated_at'],
-            'weights'        => ['academic' => 40, 'social' => 25, 'economic' => 20, 'sdg' => 15],
+            'weights'        => WeightConfigService::forImpact(),
         ];
     }
 

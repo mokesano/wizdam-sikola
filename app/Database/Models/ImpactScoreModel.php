@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Wizdam\Database\Models;
 
 use Wizdam\Database\DBConnector;
+use Wizdam\Services\SangiaApi\WeightConfigService;
 
 /**
  * Merepresentasikan tabel `impact_scores`.
@@ -50,8 +51,10 @@ class ImpactScoreModel
         float  $sdg,
         array  $sdgTags = []
     ): string {
+        $w         = WeightConfigService::forImpact();
         $composite = round(
-            ($academic * 0.40) + ($social * 0.25) + ($economic * 0.20) + ($sdg * 0.15),
+            ($academic * $w['academic']) + ($social * $w['social']) +
+            ($economic * $w['economic']) + ($sdg * $w['sdg']),
             4
         );
 
