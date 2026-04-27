@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ pageTitle ?? 'Dashboard – Wizdam AI-Sikola' }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}Platform analisis dampak penelitian Indonesia berbasis AI.{% endblock %}">
+    <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+
+    {#
+      Shell ini dimuat oleh PHP untuk halaman dinamis (React/Vite).
+      Saat development: Vite dev server di port 3000.
+      Saat production : assets di-build ke public/app/assets/
+    #}
+    {% if vite_dev %}
+        {# Development — gunakan Vite dev server dengan HMR #}
+        <script type="module" src="http://localhost:3000/@vite/client"></script>
+        <link rel="stylesheet" href="/src/index.css">
+    {% else %}
+        {# Production — load Vite manifest untuk mendapatkan hash filename #}
+        {% set manifest = vite_manifest %}
+        {% if manifest['src/main.jsx'] is defined %}
+            <link rel="stylesheet" href="/app/{{ manifest['src/main.jsx'].css[0] ?? 'assets/index.css' }}">
+            <script type="module" src="/app/{{ manifest['src/main.jsx'].file }}"></script>
+        {% else %}
+            {# Fallback jika manifest belum di-generate #}
+            <link rel="stylesheet" href="/app/assets/index.css">
+            <script type="module" src="/app/assets/main.js"></script>
+        {% endif %}
+    {% endif %}
+
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-slate-800 min-h-full">
+
+    {#
+      Data dari PHP diteruskan ke React via window.__WIZDAM_INIT__
+      Berguna untuk: current user, API URL, CSRF token, fitur flags
+    #}
+    <script>
+        window.__WIZDAM_INIT__ = {
+            apiUrl:      {{ api_url|json_encode|raw }},
+            currentUser: {{ current_user|json_encode|raw }},
+            csrfToken:   {{ csrf_token|json_encode|raw }},
+            appPath:     {{ app_path|default('/app')|json_encode|raw }}
+        };
+    </script>
+
+    {# Mount point React #}
+    <div id="root"></div>
+
+    {% if vite_dev %}
+        <script type="module" src="http://localhost:3000/src/main.jsx"></script>
+    {% endif %}
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

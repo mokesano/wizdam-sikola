@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Wizdam\Services\SangiaApi;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-
 /**
  * Mengklasifikasikan artikel/riset ke dalam 17 SDG PBB
- * menggunakan Sangia AI Engine.
+ * menggunakan Sangia AI Engine melalui SangiaGateway.
  */
 class SdgIntegrator
 {
-    private Client $http;
-    private array $apiCfg;
+    private SangiaGateway $gateway;
 
     private const SDG_LABELS = [
         1  => 'Tanpa Kemiskinan',
@@ -36,49 +32,42 @@ class SdgIntegrator
         17 => 'Kemitraan untuk Mencapai Tujuan',
     ];
 
-    public function __construct()
+    public function __construct(?string $userApiKey = null)
     {
-        $this->apiCfg = require BASE_PATH . '/config/api.php';
-        $this->http   = new Client([
-            'base_uri' => $this->apiCfg['sangia']['base_url'],
-            'timeout'  => $this->apiCfg['sangia']['timeout'],
-            'headers'  => [
-                'Authorization' => 'Bearer ' . $this->apiCfg['sangia']['api_key'],
-                'Accept'        => 'application/json',
-            ],
-        ]);
+        $this->gateway = new SangiaGateway($userApiKey);
     }
 
     /**
      * Klasifikasikan teks (judul + abstrak) ke SDG.
+     * Versi SDG default: v5. Bobot diambil dari WeightConfigService.
      *
-     * @return array [['sdg' => 4, 'label' => '...', 'score' => 0.92], ...]
+     * @return array [['sdg' => 4, 'label' => '...', 'score' => 0.92, 'color' => '#...'], ...]
      */
-    public function classify(string $title, string $abstract = ''): array
+    public function classify(string $title, string $abstract = '', string $version = 'v5'): array
     {
-        try {
-            $response = $this->http->post('/v1/sdg/classify', [
-                'json' => [
-                    'title'    => $title,
-                    'abstract' => $abstract,
-                ],
-            ]);
-
-            $result = json_decode((string) $response->getBody(), true);
-            return $this->enrichWithLabels($result['sdgs'] ?? []);
-
-        } catch (GuzzleException $e) {
-            error_log("[SdgIntegrator] API error: " . $e->getMessage());
-            return [];
-        }
+        $weights = WeightConfigService::forSdg($version);
+        $results = $this->gateway->classifySdgByText($title, $abstract, $version, $weights);
+        return $this->enrichWithColor($results);
     }
 
-    /** Tambahkan label Bahasa Indonesia ke tiap SDG. */
-    private function enrichWithLabels(array $sdgs): array
+    /**
+     * Klasifikasikan semua karya peneliti berdasarkan ORCID.
+     * Menggunakan supplied_works dari DB jika tersedia.
+     *
+     * @param array $suppliedWorks Karya dari DB Wizdam Sikola
+     */
+    public function classifyByOrcid(string $orcid, array $suppliedWorks = [], string $version = 'v5'): array
+    {
+        $weights = WeightConfigService::forSdg($version);
+        $results = $this->gateway->classifySdgByOrcid($orcid, $suppliedWorks, [], $version, $weights);
+        return $this->enrichWithColor($results);
+    }
+
+    /** Tambahkan warna UN ke tiap SDG result. */
+    private function enrichWithColor(array $sdgs): array
     {
         return array_map(function (array $sdg) {
-            $sdg['label'] = self::SDG_LABELS[$sdg['sdg']] ?? 'SDG ' . $sdg['sdg'];
-            $sdg['color'] = $this->sdgColor((int) $sdg['sdg']);
+            $sdg['color'] = $this->sdgColor((int) ($sdg['sdg'] ?? 0));
             return $sdg;
         }, $sdgs);
     }

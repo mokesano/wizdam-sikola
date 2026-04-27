@@ -22,9 +22,35 @@ return function (App $app): Router {
     $authMiddleware = new AuthMiddleware($app->getAuth());
     $adminMiddleware = new AdminMiddleware($app->getAuth());
 
+    // ─── HELPER: render React shell ───────────────────────────────────────────
+    $reactShell = function (Request $request) use ($app): Response {
+        $twig       = $app->get(\Twig\Environment::class);
+        $authSvc    = $app->get(\Wizdam\Services\AuthService::class);
+        $isDev      = ($_ENV['APP_ENV'] ?? 'production') === 'development';
+        $apiUrl     = $_ENV['REACT_APP_API_URL'] ?? '/api/v1';
+
+        // Baca Vite manifest (hanya production)
+        $manifest = [];
+        $manifestPath = BASE_PATH . '/public/app/.vite/manifest.json';
+        if (!$isDev && file_exists($manifestPath)) {
+            $manifest = json_decode(file_get_contents($manifestPath), true) ?? [];
+        }
+
+        $html = $twig->render('layouts/react_shell.twig', [
+            'vite_dev'    => $isDev,
+            'vite_manifest' => $manifest,
+            'api_url'     => $apiUrl,
+            'current_user' => $authSvc->currentUser(),
+            'csrf_token'  => bin2hex(random_bytes(16)),
+            'app_path'    => '/app',
+        ]);
+
+        return Response::html($html);
+    };
+
     // ─── PUBLIC ROUTES ────────────────────────────────────────────────────────
 
-    // Halaman Utama - Daftar Peneliti
+    // Halaman Utama - Daftar Peneliti (Twig — SEO friendly)
     $router->get('/', function (Request $request) use ($app) {
         $handler = $app->makeHandler(\Wizdam\Handlers\PublicWeb\ResearcherProfileHandler::class);
         return $handler->indexWithResponse($request);
@@ -68,9 +94,16 @@ return function (App $app): Router {
         return Response::redirect('/dashboard');
     });
 
+    // ─── REACT SPA (halaman dinamis — dimuat via Twig React shell) ───────────
+    // Semua sub-path /app/* dilayani oleh shell yang sama; React Router
+    // menangani navigasi di sisi client.
+
+    $router->get('/app',         $reactShell);
+    $router->get('/app/{path}',  $reactShell);
+
     // ─── PROTECTED ROUTES (Requires Login) ────────────────────────────────────
 
-    // Dashboard User
+    // Dashboard User (Twig — server-rendered untuk SEO & first-load cepat)
     $router->get('/dashboard', function (Request $request) use ($app, $authMiddleware) {
         if ($response = $authMiddleware->handle($request, [])) {
             return $response;

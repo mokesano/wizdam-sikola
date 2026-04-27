@@ -4,89 +4,112 @@ declare(strict_types=1);
 
 namespace Wizdam\Services\SangiaApi;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use Wizdam\Database\Models\ImpactScoreModel;
 
 /**
- * Memicu kalkulasi 4 pilar Impact Score melalui Sangia AI Engine.
+ * Fasad untuk kalkulasi Wizdam Impact Score melalui SangiaGateway.
  *
- * Pilar: Academic (40%) | Social (25%) | Economic (20%) | SDG (15%)
+ * Pola kerja:
+ *   1. Cek author_profiles_cache → kirim sebagai supplied_data (skip external fetch)
+ *   2. SangiaGateway::calculateImpact() dengan batch loop
+ *   3. Simpan raw_data ke cache jika API fetch dari sumber eksternal
+ *   4. Simpan hasil skor ke tabel impact_scores
+ *
+ * Formula: Composite = Academic×40% + Social×25% + Economic×20% + SDG×15%
  */
 class ImpactScoreClient
 {
-    private Client $http;
+    private SangiaGateway    $gateway;
     private ImpactScoreModel $scoreModel;
-    private array $apiCfg;
 
-    public function __construct()
+    public function __construct(?string $userApiKey = null)
     {
-        $this->apiCfg     = require BASE_PATH . '/config/api.php';
-        $this->http       = new Client([
-            'base_uri' => $this->apiCfg['sangia']['base_url'],
-            'timeout'  => $this->apiCfg['sangia']['timeout'],
-            'headers'  => [
-                'Authorization' => 'Bearer ' . $this->apiCfg['sangia']['api_key'],
-                'Accept'        => 'application/json',
-            ],
-        ]);
+        $this->gateway    = new SangiaGateway($userApiKey);
         $this->scoreModel = new ImpactScoreModel();
     }
 
     /**
-     * Minta kalkulasi skor untuk satu entitas.
+     * Hitung impact score untuk peneliti berdasarkan ORCID.
      *
-     * @param string $entityType researcher|article|institution|journal
-     * @param int    $entityId
-     * @return array Skor 4 pilar + komposit
+     * @param array $social   ['media_mentions' => 0–100, 'policy_citations' => ..., ...]
+     * @param array $economic ['industry_adoption' => 0–100, 'patents' => ..., ...]
+     */
+    public function calculateByOrcid(
+        string  $orcid,
+        int     $researcherId,
+        ?string $scopusId = null,
+        array   $social   = [],
+        array   $economic = []
+    ): array {
+        $t0 = microtime(true);
+
+        // Load cache → supplied_data agar tidak fetch ulang ke ORCID/Scopus
+        $cached         = RawDataPersister::loadAuthorProfile($orcid);
+        $suppliedWorks  = $cached['supplied_works']  ?? [];
+        $suppliedPerson = $cached['supplied_person'] ? [$cached['supplied_person']] : [];
+        $suppliedScopus = $cached['supplied_scopus'] ?? [];
+        $weights        = WeightConfigService::forImpact();
+
+        $result = $this->gateway->calculateImpact(
+            orcid:          $orcid,
+            scopusId:       $scopusId,
+            suppliedWorks:  $suppliedWorks,
+            suppliedPerson: $suppliedPerson,
+            suppliedScopus: $suppliedScopus,
+            social:         $social,
+            economic:       $economic,
+            weights:        $weights,
+        );
+
+        $durationMs = (int) ((microtime(true) - $t0) * 1000);
+
+        if (($result['status'] ?? '') !== 'success') {
+            RawDataPersister::logApiCall(null, '/api/v1/impact/calculate', ['orcid' => $orcid], 'error', $durationMs);
+            return $this->scoreModel->findLatest('researcher', $researcherId)
+                ?: ['error' => $result['message'] ?? 'Sangia API error'];
+        }
+
+        // Simpan raw_data ke cache jika data baru dari API eksternal
+        if (!empty($result['raw_data'])) {
+            RawDataPersister::saveAuthorProfile($orcid, $result['raw_data']);
+        }
+
+        RawDataPersister::saveAnalysis($orcid, 'impact', $result);
+
+        // Simpan skor 4 pilar ke DB
+        $pillars = $result['pillars'] ?? [];
+        $this->scoreModel->saveCalculation(
+            entityType: 'researcher',
+            entityId:   $researcherId,
+            academic:   (float) ($pillars['academic'] ?? 0),
+            social:     (float) ($pillars['social']   ?? 0),
+            economic:   (float) ($pillars['economic'] ?? 0),
+            sdg:        (float) ($pillars['sdg']      ?? 0),
+            sdgTags:    $result['sdg_tags'] ?? [],
+        );
+
+        RawDataPersister::logApiCall(
+            null, '/api/v1/impact/calculate', ['orcid' => $orcid],
+            'success', $durationMs,
+            $result['data_sources']['orcid'] ?? ''
+        );
+
+        return $this->scoreModel->findLatest('researcher', $researcherId) ?: $result;
+    }
+
+    /**
+     * Trigger kalkulasi untuk entitas selain peneliti (artikel, institusi, jurnal).
+     * Gunakan skor yang sudah ada di DB atau fallback ke DB langsung.
      */
     public function calculate(string $entityType, int $entityId): array
     {
-        try {
-            $response = $this->http->post('/v1/impact-score/calculate', [
-                'json' => [
-                    'entity_type' => $entityType,
-                    'entity_id'   => $entityId,
-                ],
-            ]);
-
-            $result = json_decode((string) $response->getBody(), true);
-
-            // Simpan ke database
-            $this->scoreModel->saveCalculation(
-                entityType: $entityType,
-                entityId:   $entityId,
-                academic:   (float) ($result['pillar_academic'] ?? 0),
-                social:     (float) ($result['pillar_social']   ?? 0),
-                economic:   (float) ($result['pillar_economic'] ?? 0),
-                sdg:        (float) ($result['pillar_sdg']      ?? 0),
-                sdgTags:    $result['sdg_tags'] ?? [],
-            );
-
-            return $result;
-
-        } catch (GuzzleException $e) {
-            error_log("[ImpactScoreClient] API error: " . $e->getMessage());
-
-            // Fallback: kembalikan skor terakhir dari DB
-            $cached = $this->scoreModel->findLatest($entityType, $entityId);
-            return $cached ?: ['error' => 'Tidak dapat menghubungi Sangia API.'];
-        }
+        $cached = $this->scoreModel->findLatest($entityType, $entityId);
+        return $cached ?: ['error' => "Skor {$entityType} #{$entityId} belum tersedia."];
     }
 
-    /** Ambil skor terkini (dari DB, tanpa trigger kalkulasi ulang). */
+    /** Ambil skor terkini dari DB tanpa trigger kalkulasi. */
     public function getLatest(string $entityType, int $entityId): array|false
     {
         return $this->scoreModel->findLatest($entityType, $entityId);
-    }
-
-    /** Batch kalkulasi untuk banyak entitas sekaligus. */
-    public function calculateBatch(string $entityType, array $entityIds): array
-    {
-        $results = [];
-        foreach ($entityIds as $id) {
-            $results[$id] = $this->calculate($entityType, $id);
-        }
-        return $results;
     }
 }

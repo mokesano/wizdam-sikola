@@ -9,21 +9,23 @@
         <!-- Avatar -->
         <div class="flex-shrink-0">
             <div class="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-3xl font-bold text-indigo-600">
-                {{ researcher.name|first|upper }}
+                {{ researcher.full_name|first|upper }}
             </div>
         </div>
 
         <!-- Info -->
         <div class="flex-1 min-w-0">
-            <h1 class="text-2xl font-bold text-slate-900">{{ researcher.name }}</h1>
-            <p class="text-slate-500 text-sm mt-0.5">{{ researcher.institution_name ?? 'Institusi tidak diketahui' }}</p>
+            <h1 class="text-2xl font-bold text-slate-900">{{ researcher.full_name }}</h1>
+            <p class="text-slate-500 text-sm mt-0.5">
+                {{ researcher.position_title ? researcher.position_title ~ ' · ' : '' }}{{ researcher.institution_name ?? 'Institusi tidak diketahui' }}
+            </p>
 
             <div class="flex flex-wrap gap-3 mt-3 text-xs text-slate-500">
-                {% if researcher.orcid %}
-                <a href="https://orcid.org/{{ researcher.orcid }}" target="_blank" rel="noopener"
+                {% if researcher.orcid_id %}
+                <a href="https://orcid.org/{{ researcher.orcid_id }}" target="_blank" rel="noopener"
                    class="inline-flex items-center gap-1 text-green-600 hover:underline font-medium">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="#A6CE39"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="bold" fill="white">iD</text></svg>
-                    ORCID {{ researcher.orcid }}
+                    ORCID {{ researcher.orcid_id }}
                 </a>
                 {% endif %}
                 {% if researcher.sinta_id %}
