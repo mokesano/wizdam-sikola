@@ -77,15 +77,24 @@ class CrawlerReceiver
 
     private function processResearcher(array $data): array
     {
-        $required = ['orcid', 'name'];
-        foreach ($required as $field) {
+        // Accept both legacy ('orcid'/'name') and schema_full ('orcid_id'/'full_name') keys
+        if (isset($data['orcid']) && !isset($data['orcid_id'])) {
+            $data['orcid_id'] = $data['orcid'];
+            unset($data['orcid']);
+        }
+        if (isset($data['name']) && !isset($data['full_name'])) {
+            $data['full_name'] = $data['name'];
+            unset($data['name']);
+        }
+
+        foreach (['orcid_id', 'full_name'] as $field) {
             if (empty($data[$field])) {
                 throw new \InvalidArgumentException("Field '$field' wajib ada.");
             }
         }
 
         $id = $this->researcherModel->upsert($data);
-        return ['id' => $id, 'orcid' => $data['orcid']];
+        return ['id' => $id, 'orcid_id' => $data['orcid_id']];
     }
 
     private function processArticle(array $data): array

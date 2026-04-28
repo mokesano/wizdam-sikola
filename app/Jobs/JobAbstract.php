@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizdam\App\Jobs;
+namespace Wizdam\Jobs;
 
 /**
  * Base class untuk semua Job/Queue workers

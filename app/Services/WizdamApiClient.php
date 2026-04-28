@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizdam\App\Services;
+namespace Wizdam\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;

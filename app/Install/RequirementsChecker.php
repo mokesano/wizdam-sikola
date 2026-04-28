@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Install;
+namespace Wizdam\Install;
 
 use PDO;
 use Exception;

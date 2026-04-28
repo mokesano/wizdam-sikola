@@ -172,13 +172,16 @@ class App
                 case 'PDO':
                     $dependencies[] = $this->getDb();
                     break;
+                case 'Wizdam\Database\DBConnector':
+                    $dependencies[] = DBConnector::getInstance();
+                    break;
                 case 'Twig\Environment':
                     $dependencies[] = $this->getTwig();
                     break;
                 case 'Wizdam\Services\Core\AuthManager':
                     $dependencies[] = $this->getAuth();
                     break;
-                case 'Wizdam\Services\WizdamApiClient':
+                case 'Wizdam\Services\SangiaApi\SangiaGateway':
                     $dependencies[] = $this->getApiClient();
                     break;
                 case 'Wizdam\Services\ApiKeyManager':

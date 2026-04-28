@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wizdam\App\Jobs;
+namespace Wizdam\Jobs;
 
 use Wizdam\Services\SangiaApi\ImpactScoreClient;
 use Wizdam\Services\SangiaApi\SdgIntegrator;
