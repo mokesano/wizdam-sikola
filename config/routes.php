@@ -90,6 +90,12 @@ return function (App $app): Router {
         return $handler->showWithResponse($issn);
     });
 
+    // WizdamCrawler — halaman publik mesin crawler resmi
+    $router->get('/crawler', function (Request $request) use ($app) {
+        $html = $app->getTwig()->render('pages/public/wizdamcrawler.twig');
+        return Response::html($html);
+    });
+
     // ─── AUTH ROUTES ──────────────────────────────────────────────────────────
 
     // Login page & handle

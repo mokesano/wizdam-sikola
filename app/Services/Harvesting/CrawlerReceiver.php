@@ -7,6 +7,8 @@ namespace Wizdam\Services\Harvesting;
 use Wizdam\Database\DBConnector;
 use Wizdam\Database\Models\ResearcherModel;
 use Wizdam\Database\Models\JournalModel;
+use Wizdam\Http\Request;
+use Wizdam\Http\Response;
 
 /**
  * Endpoint penerima data dari WizdamCrawler (agen eksternal).
@@ -27,29 +29,21 @@ class CrawlerReceiver
         $this->journalModel    = new JournalModel();
     }
 
-    public function receive(string $method): void
+    public function receiveWithResponse(Request $request): Response
     {
-        header('Content-Type: application/json');
-
-        if ($method !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['error' => 'Method Not Allowed']);
-            return;
+        if ($request->method !== 'POST') {
+            return Response::json(['error' => 'Method Not Allowed'], 405);
         }
 
         if (!$this->isAuthorized()) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Unauthorized']);
-            return;
+            return Response::json(['error' => 'Unauthorized'], 401);
         }
 
         $raw     = file_get_contents('php://input');
         $payload = json_decode($raw, true);
 
         if (!$payload || !isset($payload['type'])) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Payload tidak valid atau tipe tidak dikenali.']);
-            return;
+            return Response::json(['error' => 'Payload tidak valid atau tipe tidak dikenali.'], 400);
         }
 
         try {
@@ -60,13 +54,13 @@ class CrawlerReceiver
                 default      => throw new \InvalidArgumentException("Tipe '{$payload['type']}' tidak dikenali."),
             };
 
-            echo json_encode(['status' => 'ok', 'result' => $result]);
+            return Response::json(['status' => 'ok', 'result' => $result]);
 
         } catch (\Throwable $e) {
-            http_response_code(422);
-            echo json_encode(['error' => $e->getMessage()]);
+            return Response::json(['error' => $e->getMessage()], 422);
         }
     }
+
 
     private function isAuthorized(): bool
     {
@@ -83,15 +77,24 @@ class CrawlerReceiver
 
     private function processResearcher(array $data): array
     {
-        $required = ['orcid', 'name'];
-        foreach ($required as $field) {
+        // Accept both legacy ('orcid'/'name') and schema_full ('orcid_id'/'full_name') keys
+        if (isset($data['orcid']) && !isset($data['orcid_id'])) {
+            $data['orcid_id'] = $data['orcid'];
+            unset($data['orcid']);
+        }
+        if (isset($data['name']) && !isset($data['full_name'])) {
+            $data['full_name'] = $data['name'];
+            unset($data['name']);
+        }
+
+        foreach (['orcid_id', 'full_name'] as $field) {
             if (empty($data[$field])) {
                 throw new \InvalidArgumentException("Field '$field' wajib ada.");
             }
         }
 
         $id = $this->researcherModel->upsert($data);
-        return ['id' => $id, 'orcid' => $data['orcid']];
+        return ['id' => $id, 'orcid_id' => $data['orcid_id']];
     }
 
     private function processArticle(array $data): array

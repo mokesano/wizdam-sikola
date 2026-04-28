@@ -1,119 +1,101 @@
 <?php
 
-namespace Wizdam\App\Jobs;
+declare(strict_types=1);
 
-use Wizdam\App\Services\WizdamApiClient;
+namespace Wizdam\Jobs;
+
+use Wizdam\Services\Crawler\WebCrawler;
+use Wizdam\Services\Harvesting\OaiPmhHarvester;
+use Wizdam\Services\SangiaApi\RawDataPersister;
+use Wizdam\Services\Core\ProfileManager;
 
 /**
- * Job untuk melakukan crawling data peneliti dari berbagai sumber
- * (Scopus, ORCID, Sinta, Google Scholar, dll)
+ * Job untuk crawling data peneliti dari berbagai sumber.
+ * Menggunakan WebCrawler (Scholar, ResearchGate, Crossref, Semantic Scholar)
+ * dan ProfileManager (ORCID API).
  */
 class ResearcherCrawlerJob extends JobAbstract
 {
-    private WizdamApiClient $apiClient;
-    
-    public function __construct(string $jobId, array $data = [], ?WizdamApiClient $apiClient = null)
+    private WebCrawler     $crawler;
+    private ProfileManager $profileManager;
+
+    public function __construct(string $jobId, array $data = [])
     {
         parent::__construct($jobId, $data);
-        $this->apiClient = $apiClient ?? new WizdamApiClient($_ENV['WIZDAM_API_URL'] ?? 'https://api.sangia.org');
+        $this->crawler        = new WebCrawler();
+        $this->profileManager = new ProfileManager();
     }
-    
+
     public function handle(): mixed
     {
-        $researcherId = $this->data['researcher_id'] ?? null;
-        $sources = $this->data['sources'] ?? ['orcid', 'scopus', 'sinta'];
-        
-        if (!$researcherId) {
-            throw new \InvalidArgumentException("researcher_id diperlukan");
+        $orcid   = $this->data['orcid']   ?? null;
+        $sources = $this->data['sources'] ?? ['orcid', 'scholar', 'citations'];
+
+        if (!$orcid) {
+            throw new \InvalidArgumentException('orcid diperlukan');
         }
-        
-        $results = [];
-        $totalSources = count($sources);
-        $completedSources = 0;
-        
-        foreach ($sources as $index => $source) {
-            $this->updateProgress(
-                (int)(($index / $totalSources) * 100),
-                "Crawling {$source}..."
-            );
-            
+
+        $results       = [];
+        $totalSources  = count($sources);
+
+        foreach ($sources as $i => $source) {
+            $this->updateProgress((int)(($i / $totalSources) * 90), "Crawling $source...");
+
             try {
-                $result = $this->crawlSource($source, $researcherId);
-                $results[$source] = [
-                    'success' => true,
-                    'data' => $result
-                ];
-            } catch (\Exception $e) {
-                $results[$source] = [
-                    'success' => false,
-                    'error' => $e->getMessage()
-                ];
+                $results[$source] = match($source) {
+                    'orcid'   => $this->crawlOrcid($orcid),
+                    'scholar' => $this->crawlScholar($orcid),
+                    'citations' => $this->crawlCitations($orcid),
+                    default   => [],
+                };
+            } catch (\Throwable $e) {
+                error_log("[ResearcherCrawlerJob] $source error for $orcid: " . $e->getMessage());
+                $results[$source] = ['error' => $e->getMessage()];
             }
-            
-            $completedSources++;
         }
-        
-        $this->updateProgress(100, "Crawling completed");
-        
+
+        $this->updateProgress(100, 'Selesai');
+
         return [
-            'researcher_id' => $researcherId,
+            'orcid'   => $orcid,
             'sources' => $results,
-            'summary' => [
-                'total_sources' => $totalSources,
-                'successful' => count(array_filter($results, fn($r) => $r['success'])),
-                'failed' => count(array_filter($results, fn($r) => !$r['success']))
-            ]
+            'success' => count(array_filter($results, fn($r) => !isset($r['error']))),
+            'failed'  => count(array_filter($results, fn($r) => isset($r['error']))),
         ];
     }
-    
-    /**
-     * Crawl dari sumber tertentu
-     */
-    private function crawlSource(string $source, string $researcherId): array
+
+    private function crawlOrcid(string $orcid): array
     {
-        return match($source) {
-            'orcid' => $this->crawlOrcid($researcherId),
-            'scopus' => $this->crawlScopus($researcherId),
-            'sinta' => $this->crawlSinta($researcherId),
-            'google_scholar' => $this->crawlGoogleScholar($researcherId),
-            default => throw new \InvalidArgumentException("Sumber {$source} tidak didukung")
-        };
+        $profile = $this->profileManager->fetchFromOrcid($orcid);
+        if ($profile) {
+            RawDataPersister::saveAuthorProfile($orcid, ['orcid_person' => $profile]);
+        }
+        return $profile;
     }
-    
-    private function crawlOrcid(string $researcherId): array
+
+    private function crawlScholar(string $orcid): array
     {
-        // Call API ORCID melalui Wizdam API
-        $response = $this->apiClient->callMonolithic('/crawler/orcid', [
-            'researcher_id' => $researcherId
-        ]);
-        
-        return $response['data'] ?? [];
+        // Cari nama peneliti dari cache DB terlebih dahulu
+        $cached = RawDataPersister::loadAuthorProfile($orcid);
+        $name   = $cached['supplied_person']['name'] ?? $orcid;
+        return $this->crawler->crawlGoogleScholar($name);
     }
-    
-    private function crawlScopus(string $researcherId): array
+
+    private function crawlCitations(string $orcid): array
     {
-        $response = $this->apiClient->callMonolithic('/crawler/scopus', [
-            'researcher_id' => $researcherId
-        ]);
-        
-        return $response['data'] ?? [];
-    }
-    
-    private function crawlSinta(string $researcherId): array
-    {
-        $response = $this->apiClient->callMonolithic('/crawler/sinta', [
-            'researcher_id' => $researcherId
-        ]);
-        
-        return $response['data'] ?? [];
-    }
-    
-    private function crawlGoogleScholar(string $researcherId): array
-    {
-        $response = $this->apiClient->callMonolithic('/crawler/google-scholar', [
-            'researcher_id' => $researcherId
-        ]);
-        
-        return $response['data'] ?? [];
+        $cached = RawDataPersister::loadAuthorProfile($orcid);
+        $works  = $cached['supplied_works'] ?? [];
+        $result = [];
+
+        foreach (array_slice($works, 0, 10) as $work) {
+            $doi = $work['doi'] ?? null;
+            if ($doi) {
+                $cit = $this->crawler->crawlCitationNetworks($doi);
+                RawDataPersister::saveCitation($doi, $cit);
+                $result[] = $cit;
+            }
+        }
+
+        return $result;
     }
 }
