@@ -61,7 +61,7 @@ class JournalProfileHandler
             'liveIndexing' => $liveIndexing,
             'score'        => $score,
             'scoreHistory' => $scoreHistory,
-            'pageTitle'    => ($journal['title'] ?? "Jurnal ISSN $issn") . ' – Wizdam AI-Sikola',
+            'pageTitle'    => ($journal['title'] ?? "Jurnal ISSN $issn") . ' – Wizdam Sicola',
         ]);
     }
 
@@ -95,7 +95,7 @@ class JournalProfileHandler
             'liveIndexing' => $liveIndexing,
             'score'        => $score,
             'scoreHistory' => $scoreHistory,
-            'pageTitle'    => ($journal['title'] ?? "Jurnal ISSN $issn") . ' – Wizdam AI-Sikola',
+            'pageTitle'    => ($journal['title'] ?? "Jurnal ISSN $issn") . ' – Wizdam Sicola',
         ]);
 
         return Response::html($html);

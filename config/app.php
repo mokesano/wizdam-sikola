@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'name'          => $_ENV['APP_NAME'] ?? 'Wizdam AI-Sikola',
+    'name'          => $_ENV['APP_NAME'] ?? 'Wizdam Sicola',
     'version'       => '1.0.0',
     'url'           => $_ENV['APP_URL'] ?? 'http://localhost',
     'base_path'     => $_ENV['BASE_PATH'] ?? dirname(__DIR__),

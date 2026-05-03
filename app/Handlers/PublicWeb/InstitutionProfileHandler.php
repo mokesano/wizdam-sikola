@@ -63,7 +63,7 @@ class InstitutionProfileHandler
             'score'        => $score,
             'scoreHistory' => $scoreHistory,
             'pubTrend'     => $pubTrend,
-            'pageTitle'    => ($institution['name'] ?? "Institusi #$id") . ' – Wizdam AI-Sikola',
+            'pageTitle'    => ($institution['name'] ?? "Institusi #$id") . ' – Wizdam Sicola',
         ]);
     }
 
@@ -100,7 +100,7 @@ class InstitutionProfileHandler
             'score'        => $score,
             'scoreHistory' => $scoreHistory,
             'pubTrend'     => $pubTrend,
-            'pageTitle'    => ($institution['name'] ?? "Institusi #$id") . ' – Wizdam AI-Sikola',
+            'pageTitle'    => ($institution['name'] ?? "Institusi #$id") . ' – Wizdam Sicola',
         ]);
 
         return Response::html($html);

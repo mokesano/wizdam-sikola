@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 
-import WizdomIndonesiaDashboard  from './components/WizdomIndonesiaDashboard';
+import WizdamDashboard  from './components/WizdamDashboard';
 import TopResearchersComponent   from './components/TopResearchersComponent';
 import TrendsAnalysisComponent   from './components/TrendsAnalysisComponent';
 import ArticleImpactComponent    from './components/ArticleImpactComponent';
@@ -14,7 +14,7 @@ function App() {
     <AppProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/"               element={<WizdomIndonesiaDashboard />} />
+          <Route path="/"               element={<WizdamDashboard />} />
           <Route path="/article-impact" element={<ArticleImpactComponent />}   />
           <Route path="/researchers"    element={<TopResearchersComponent />}   />
           <Route path="/researcher-map" element={<ResearcherMapComponent />}    />

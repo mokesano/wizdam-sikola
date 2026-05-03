@@ -54,7 +54,7 @@ class SdgIntegrator
      * Klasifikasikan semua karya peneliti berdasarkan ORCID.
      * Menggunakan supplied_works dari DB jika tersedia.
      *
-     * @param array $suppliedWorks Karya dari DB Wizdam Sikola
+     * @param array $suppliedWorks Karya dari DB Wizdam Sicola
      */
     public function classifyByOrcid(string $orcid, array $suppliedWorks = [], string $version = 'v5'): array
     {

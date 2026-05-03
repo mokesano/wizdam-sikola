@@ -1,4 +1,4 @@
-# Panduan Instalasi Wizdam AI-Sikola
+# Panduan Instalasi Wizdam Sicola
 
 ## Prasyarat
 
@@ -36,8 +36,8 @@ Script ini akan:
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/mokesano/wizdam-sikola.git
-cd wizdam-sikola
+git clone https://github.com/mokesano/wizdam-sicola.git
+cd wizdam-sicola
 ```
 
 ### 2. Install PHP Dependencies
@@ -62,7 +62,7 @@ Edit `.env` dan isi nilai-nilai berikut:
 
 ```env
 # Aplikasi
-APP_NAME="Wizdam AI-Sikola"
+APP_NAME="Wizdam Sicola"
 APP_ENV=development          # production untuk live
 APP_DEBUG=true               # false di production
 APP_URL=https://domain-anda.com
@@ -71,7 +71,7 @@ TWIG_CACHE=false             # true di production
 # Database
 DB_HOST=localhost
 DB_PORT=3306
-DB_DATABASE=wizdam_sikola
+DB_DATABASE=wizdam_sicola
 DB_USERNAME=dbuser
 DB_PASSWORD=password_aman
 
@@ -100,13 +100,13 @@ php -r "echo bin2hex(random_bytes(32));"
 
 ```bash
 # Buat database
-mysql -u root -p -e "CREATE DATABASE wizdam_sikola CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e "CREATE DATABASE wizdam_sicola CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # Jalankan skema utama
-mysql -u root -p wizdam_sikola < database_schema_full.sql
+mysql -u root -p wizdam_sicola < database_schema_full.sql
 
 # Jalankan migrasi v2 (tabel cache & bobot)
-mysql -u root -p wizdam_sikola < database_migration_v2.sql
+mysql -u root -p wizdam_sicola < database_migration_v2.sql
 ```
 
 ### 6. Build React SPA
@@ -140,9 +140,9 @@ php -S localhost:8000 -t public/
 ```apache
 <VirtualHost *:80>
     ServerName domain-anda.com
-    DocumentRoot /var/www/wizdam-sikola/public
+    DocumentRoot /var/www/wizdam-sicola/public
 
-    <Directory /var/www/wizdam-sikola/public>
+    <Directory /var/www/wizdam-sicola/public>
         AllowOverride All
         Require all granted
     </Directory>
@@ -166,7 +166,7 @@ RewriteRule ^ index.php [QSA,L]
 server {
     listen 80;
     server_name domain-anda.com;
-    root /var/www/wizdam-sikola/public;
+    root /var/www/wizdam-sicola/public;
     index index.php;
 
     location / {
@@ -199,7 +199,7 @@ server {
 | `TWIG_CACHE` | | `false` | Cache template Twig |
 | `APP_CORS_ORIGINS` | | `http://localhost:3000` | CORS origins (koma-separated) |
 | `DB_HOST` | ✓ | `localhost` | Host database |
-| `DB_DATABASE` | ✓ | `wizdam_sikola` | Nama database |
+| `DB_DATABASE` | ✓ | `wizdam_sicola` | Nama database |
 | `DB_USERNAME` | ✓ | `root` | Username DB |
 | `DB_PASSWORD` | ✓ | | Password DB |
 | `ORCID_CLIENT_ID` | ✓ | | Client ID dari orcid.org/developer |

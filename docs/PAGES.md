@@ -1,8 +1,8 @@
-# Panduan Halaman dan Menu Wizdam AI-Sikola
+# Panduan Halaman dan Menu Wizdam Sicola
 
 ## Arsitektur Rendering
 
-Wizdam AI-Sikola menggunakan dua model rendering:
+Wizdam Sicola menggunakan dua model rendering:
 
 | Model | Teknologi | Digunakan Untuk |
 |-------|-----------|-----------------|

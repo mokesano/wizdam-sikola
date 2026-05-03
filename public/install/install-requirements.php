@@ -12,7 +12,7 @@ $requirements = $checker->check();
             <i class="fas fa-check-circle text-green-500 text-2xl mr-3"></i>
             <div>
                 <h3 class="font-semibold text-green-800">Semua persyaratan terpenuhi!</h3>
-                <p class="text-green-700 text-sm">Sistem Anda siap untuk instalasi Wizdam AI-Sikola.</p>
+                <p class="text-green-700 text-sm">Sistem Anda siap untuk instalasi Wizdam Sicola.</p>
             </div>
         </div>
     </div>

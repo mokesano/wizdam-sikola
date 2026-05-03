@@ -1,4 +1,4 @@
--- Database Schema untuk Wizdam AI-Sikola
+-- Database Schema untuk Wizdam Sicola
 -- MariaDB 10.6+
 
 -- Tabel Users (menggunakan delight-im auth)
@@ -273,8 +273,8 @@ CREATE TABLE IF NOT EXISTS settings (
 
 -- Insert default settings
 INSERT INTO settings (setting_key, setting_value, setting_type, description) VALUES
-('site_name', 'Wizdam AI-Sikola', 'string', 'Nama situs'),
-('site_description', 'Platform Pengukuran Dampak Riset Indonesia', 'string', 'Deskripsi situs'),
+('site_name', 'Wizdam Sicola', 'string', 'Nama situs'),
+('site_description', 'Platform Pengukuran Dampak Riset', 'string', 'Deskripsi situs'),
 ('maintenance_mode', 'false', 'boolean', 'Mode maintenance'),
 ('registration_enabled', 'true', 'boolean', 'Izinkan registrasi pengguna baru'),
 ('default_subscription_tier', 'free', 'string', 'Tier subscription default');

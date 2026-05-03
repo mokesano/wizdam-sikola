@@ -1,6 +1,6 @@
 {
-    "name": "wizdam/sikola",
-    "description": "Wizdam AI-Sikola – Platform Pengukuran Dampak Riset Indonesia",
+    "name": "wizdam/sicola",
+    "description": "Wizdam Sicola – Platform Pengukuran Dampak Riset",
     "type": "project",
     "license": "MIT",
     "require": {

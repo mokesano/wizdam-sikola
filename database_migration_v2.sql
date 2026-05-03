@@ -1,5 +1,5 @@
 -- ============================================================
--- Wizdam Sikola — DB Migration v2
+-- Wizdam Sicola — DB Migration v2
 -- Tabel pendukung integrasi Sangia API Engine
 -- Jalankan setelah database_schema_full.sql
 -- ============================================================
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS api_call_logs (
     params       JSON         DEFAULT NULL,
     status       VARCHAR(20)  NOT NULL COMMENT 'success|error|processing',
     duration_ms  INT          DEFAULT NULL,
-    data_source  VARCHAR(50)  DEFAULT NULL COMMENT 'wizdam_sikola_db|orcid_api|scopus_api|...',
+    data_source  VARCHAR(50)  DEFAULT NULL COMMENT 'wizdam_sicola_db|orcid_api|scopus_api|...',
     called_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     INDEX idx_user    (user_id),

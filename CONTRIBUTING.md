@@ -1,4 +1,4 @@
-# Contributing to Wizdam Sikola
+# Contributing to Wizdam Sicola
 
 First of all, thank you for contributing!
 

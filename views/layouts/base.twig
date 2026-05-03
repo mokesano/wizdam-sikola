@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="id" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ pageTitle ?? app.name }}{% endblock %}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{% block description %}Platform pengukuran dampak riset Indonesia berbasis AI.{% endblock %}">
 
     <!-- Favicon -->
@@ -25,7 +25,7 @@
                 <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                 </svg>
-                Wizdam <span class="text-slate-400 font-normal text-sm ml-1">AI-Sikola</span>
+                Wizdam <span class="text-slate-400 font-normal text-sm ml-1">Sicola</span>
             </a>
 
             <!-- Nav Links -->
@@ -55,7 +55,7 @@
     <!-- ── Footer ── -->
     <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
         <div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-slate-400">
-            <span>&copy; {{ "now"|date("Y") }} Wizdam AI-Sikola. Didukung oleh <a href="https://sangia.org" class="text-indigo-400 hover:underline">Sangia</a>.</span>
+            <span>&copy; {{ "now"|date("Y") }} Wizdam Sicola. Didukung oleh <a href="https://sangia.org" class="text-indigo-400 hover:underline">Sangia</a>.</span>
             <nav class="flex gap-4">
                 <a href="/tools/image-resizer" class="hover:text-slate-600">Image Resizer</a>
                 <a href="/tools/pdf-compress" class="hover:text-slate-600">PDF Compressor</a>

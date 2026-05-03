@@ -1,4 +1,4 @@
-# Formula, Bobot, dan Metodologi Wizdam AI-Sikola
+# Formula, Bobot, dan Metodologi Wizdam Sicola
 
 ## Wizdam Impact Score (WIS)
 
@@ -148,19 +148,19 @@ Valid jika: timestamp + 365×86400 > now() AND HMAC cocok
 wz_42_1717200000_a3f8c2e1b4d5f678
 ```
 
-`WIZDAM_SHARED_SECRET` harus sama antara wizdam-sikola dan wizdam-apis untuk validasi silang.
+`WIZDAM_SHARED_SECRET` harus sama antara wizdam-sicola dan wizdam-apis untuk validasi silang.
 
 ---
 
 ## Supplied Data Pattern
 
-Untuk menghemat kuota API dan mengurangi latensi, Wizdam Sikola mengirimkan data yang sudah ada di database ke Sangia API (`supplied_data`), sehingga Sangia tidak perlu fetch ulang dari ORCID/Scopus.
+Untuk menghemat kuota API dan mengurangi latensi, Wizdam Sicola mengirimkan data yang sudah ada di database ke Sangia API (`supplied_data`), sehingga Sangia tidak perlu fetch ulang dari ORCID/Scopus.
 
 ```
 IF author_profiles_cache EXISTS FOR orcid:
     kirim supplied_works, supplied_person, supplied_scopus ke Sangia
     → Sangia skip external fetch
-    → data_source = 'wizdam_sikola_db'
+    → data_source = 'wizdam_sicola_db'
 ELSE:
     Sangia fetch dari ORCID/Scopus
     → simpan raw_data ke author_profiles_cache

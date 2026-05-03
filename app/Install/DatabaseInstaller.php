@@ -38,7 +38,7 @@ class DatabaseInstaller
     {
         $content = sprintf(
             "APP_NAME=\"%s\"\nAPP_ENV=%s\nAPP_DEBUG=%s\nAPP_URL=%s\n\nDB_HOST=%s\nDB_PORT=%s\nDB_NAME=%s\nDB_USER=%s\nDB_PASS=%s\n\nWIZDAM_API_URL=%s\nWIZDAM_API_KEY=%s\nGEOIP_PATH=storage/geoip/GeoLite2-City.mmdb\n",
-            $config['app_name'] ?? 'Wizdam AI-Sikola',
+            $config['app_name'] ?? 'Wizdam Sicola',
             $config['app_env'] ?? 'production',
             $config['app_debug'] ?? 'false',
             $config['app_url'] ?? 'https://www.sangia.org',

@@ -1,8 +1,8 @@
-# Panduan Instalasi Wizdam AI-Sikola
+# Panduan Instalasi Wizdam Sicola
 
 ## Cara Instalasi (Tanpa Terminal)
 
-Aplikasi Wizdam AI-Sikola dilengkapi dengan **installer berbasis web** yang memudahkan proses instalasi tanpa perlu mengakses terminal/server command line.
+Aplikasi Wizdam Sicola dilengkapi dengan **installer berbasis web** yang memudahkan proses instalasi tanpa perlu mengakses terminal/server command line.
 
 ### Langkah-langkah Instalasi:
 

@@ -1,5 +1,5 @@
 /**
- * Wizdam AI-Sikola – JavaScript Utama
+ * Wizdam Sicola – JavaScript Utama
  * Vanilla JS, tanpa framework/bundler.
  */
 

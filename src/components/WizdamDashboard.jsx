@@ -19,7 +19,7 @@ const StatCard = ({ label, value, sub, color }) => (
   </div>
 );
 
-const WizdomIndonesiaDashboard = () => {
+const WizdamDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const {
@@ -333,4 +333,4 @@ const WizdomIndonesiaDashboard = () => {
   );
 };
 
-export default WizdomIndonesiaDashboard;
+export default WizdamDashboard;
