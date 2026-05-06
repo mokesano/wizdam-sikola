@@ -68,7 +68,7 @@ class SangiaGateway
      * Klasifikasi SDG untuk seorang peneliti berdasarkan ORCID.
      * Menggunakan pola batch dan supplied_works dari DB.
      *
-     * @param array $suppliedWorks Karya dari DB Wizdam Sicola
+     * @param array $suppliedWorks Karya dari DB Wizdam Scola
      * @param array $suppliedPerson Person data dari DB
      */
     public function classifySdgByOrcid(

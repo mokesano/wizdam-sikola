@@ -2,11 +2,11 @@
 
 ## Umum
 
-**Q: Apa itu Wizdam Sicola?**  
+**Q: Apa itu Wizdam Scola?**  
 A: Platform analisis dampak penelitian Indonesia yang mengukur kontribusi peneliti, artikel, institusi, dan jurnal menggunakan Wizdam Impact Score (WIS) — skor komposit dari 4 pilar: Akademik, Sosial, Ekonomi, dan SDG.
 
 **Q: Apa itu Sangia AI Engine?**  
-A: Sangia adalah backend analitik AI (`api.sangia.org`) yang melakukan kalkulasi berat: SDG classification, impact score, trend analysis, dan policy recommendation. Sangia tidak menyimpan data — semua persistensi dilakukan oleh Wizdam Sicola. Sangia Engine dikelola terpisah di repository `wizdam-apis`.
+A: Sangia adalah backend analitik AI (`api.sangia.org`) yang melakukan kalkulasi berat: SDG classification, impact score, trend analysis, dan policy recommendation. Sangia tidak menyimpan data — semua persistensi dilakukan oleh Wizdam Scola. Sangia Engine dikelola terpisah di repository `wizdam-apis`.
 
 **Q: Mengapa ada dua server (PHP port 8000 dan Node port 3000)?**  
 A: Saat development, PHP melayani halaman Twig dan REST API, sementara Vite dev server melayani React frontend dengan Hot Module Replacement (HMR). Di production, hanya PHP yang berjalan — React di-build menjadi file statis di `public/app/`.
@@ -37,7 +37,7 @@ A: 365 hari sejak dibuat. Setelah expired, generate key baru melalui Dashboard �
 **Q: Bagaimana jika API Key saya bocor?**  
 A: Segera klik "Cabut API Key" di Dashboard. Key akan langsung di-blacklist di Sangia API Engine dan di-null-kan di database.
 
-**Q: Kenapa WIZDAM_SHARED_SECRET harus sama antara Sicola dan APIs?**  
+**Q: Kenapa WIZDAM_SHARED_SECRET harus sama antara Scola dan APIs?**  
 A: Sangia API memvalidasi HMAC key secara lokal tanpa roundtrip ke database. Agar validasi berhasil di kedua sisi, secret harus identik.
 
 ---
@@ -157,5 +157,5 @@ git pull origin main
 composer install --optimize-autoloader
 npm install && npm run build
 # Jalankan migration baru jika ada:
-mysql -u root -p wizdam_sicola < database_migration_vX.sql
+mysql -u root -p wizdam_scola < database_migration_vX.sql
 ```

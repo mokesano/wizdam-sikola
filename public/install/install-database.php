@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'db_name' => $_POST['db_name'],
                 'db_user' => $_POST['db_user'],
                 'db_pass' => $_POST['db_pass'],
-                'app_name' => $_POST['app_name'] ?? 'Wizdam Sicola',
+                'app_name' => $_POST['app_name'] ?? 'Wizdam Scola',
                 'app_env' => $_POST['app_env'] ?? 'production',
                 'app_debug' => isset($_POST['app_debug']) ? 'true' : 'false',
                 'app_url' => $_POST['app_url'] ?? 'https://www.sangia.org',
@@ -74,7 +74,7 @@ $config = $_SESSION['db_config'] ?? [];
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aplikasi</label>
-                <input type="text" name="app_name" value="<?= htmlspecialchars($config['app_name'] ?? 'Wizdam Sicola') ?>" 
+                <input type="text" name="app_name" value="<?= htmlspecialchars($config['app_name'] ?? 'Wizdam Scola') ?>" 
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
             </div>
             <div>

@@ -77,7 +77,7 @@ class AdminAnalyticsHandler
             'scoreDistribution' => $scoreDistribution,
             'topInstitutions'   => $topInstitutions,
             'recentLogs'        => $recentLogs,
-            'pageTitle'         => 'Admin Analytics – Wizdam Sicola',
+            'pageTitle'         => 'Admin Analytics – Wizdam Scola',
         ]);
     }
 
@@ -139,7 +139,7 @@ class AdminAnalyticsHandler
             'scoreDistribution' => $scoreDistribution,
             'topInstitutions'   => $topInstitutions,
             'recentLogs'        => $recentLogs,
-            'pageTitle'         => 'Admin Analytics – Wizdam Sicola',
+            'pageTitle'         => 'Admin Analytics – Wizdam Scola',
         ]);
 
         return Response::html($html);

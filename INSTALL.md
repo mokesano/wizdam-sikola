@@ -1,8 +1,8 @@
-# Panduan Instalasi Wizdam Sicola
+# Panduan Instalasi Wizdam Scola
 
 ## Cara Instalasi (Tanpa Terminal)
 
-Aplikasi Wizdam Sicola dilengkapi dengan **installer berbasis web** yang memudahkan proses instalasi tanpa perlu mengakses terminal/server command line.
+Aplikasi Wizdam Scola dilengkapi dengan **installer berbasis web** yang memudahkan proses instalasi tanpa perlu mengakses terminal/server command line.
 
 ### Langkah-langkah Instalasi:
 

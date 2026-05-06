@@ -330,9 +330,9 @@ WizdamCrawler dan Sangia Engine bekerja bersama lewat pola **supplied_data**:
    → POST ke api.sangia.org dengan body: { supplied_works: [...], supplied_person: {...} }
 
 4. Sangia menggunakan data yang disuplai tanpa fetch ulang:
-   response: { data_source: "wizdam_sicola_db", wizdam_score: 87.4 }
+   response: { data_source: "wizdam_scola_db", wizdam_score: 87.4 }
 
-5. Skor disimpan ke database Wizdam Sicola
+5. Skor disimpan ke database Wizdam Scola
 ```
 
 **Keuntungan pola ini:**

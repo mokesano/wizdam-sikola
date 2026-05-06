@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Wizdam Sicola — Setup Script
+# Wizdam Scola — Setup Script
 # Jalankan dari root project: bash setup.sh
 # =============================================================================
 set -e
@@ -17,7 +17,7 @@ warn()  { echo -e "  ${YELLOW}⚠ $1${NC}"; }
 fail()  { echo -e "  ${RED}✘ $1${NC}"; }
 
 echo -e "${BOLD}=============================================="
-echo -e " Wizdam Sicola — Setup"
+echo -e " Wizdam Scola — Setup"
 echo -e "==============================================${NC}"
 
 # ─── 1. Cek prasyarat ─────────────────────────────────────────────────────────
@@ -96,11 +96,11 @@ echo ""
 echo "  1. Edit .env — pastikan DB, ORCID, dan Sangia API dikonfigurasi"
 echo ""
 echo "  2. Buat database MySQL:"
-echo "       mysql -u root -p -e \"CREATE DATABASE wizdam_sicola CHARACTER SET utf8mb4;\""
+echo "       mysql -u root -p -e \"CREATE DATABASE wizdam_scola CHARACTER SET utf8mb4;\""
 echo ""
 echo "  3. Jalankan migrasi database:"
-echo "       mysql -u root -p wizdam_sicola < database_schema_full.sql"
-echo "       mysql -u root -p wizdam_sicola < database_migration_v2.sql"
+echo "       mysql -u root -p wizdam_scola < database_schema_full.sql"
+echo "       mysql -u root -p wizdam_scola < database_migration_v2.sql"
 echo ""
 echo "  4. Jalankan PHP dev server:"
 echo "       php -S localhost:8000 -t public/"

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instalasi Wizdam Sicola</title>
+    <title>Instalasi Wizdam Scola</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -11,7 +11,7 @@
     <div class="max-w-4xl mx-auto px-4">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-indigo-900 mb-2">
-                <i class="fas fa-flask mr-3"></i>Instalasi Wizdam Sicola
+                <i class="fas fa-flask mr-3"></i>Instalasi Wizdam Scola
             </h1>
             <p class="text-gray-600">Panduan instalasi aplikasi tanpa terminal</p>
         </div>
@@ -72,7 +72,7 @@
         </div>
 
         <div class="text-center mt-8 text-gray-500 text-sm">
-            <p>&copy; <?= date('Y') ?> Wizdam Sicola. All rights reserved.</p>
+            <p>&copy; <?= date('Y') ?> Wizdam Scola. All rights reserved.</p>
         </div>
     </div>
 </body>

@@ -4,7 +4,7 @@
 **Versi API:** v1  
 **Autentikasi:** `X-API-Key: wz_{user_id}_{timestamp}_{hmac16}`
 
-> API key dihasilkan oleh **Wizdam Sicola** dan divalidasi secara stateless menggunakan HMAC-SHA256.  
+> API key dihasilkan oleh **Wizdam Scola** dan divalidasi secara stateless menggunakan HMAC-SHA256.  
 > Semua endpoint wajib menyertakan API key kecuali yang ditandai _(publik)_.
 
 ---
@@ -56,11 +56,11 @@ Header response: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
 ## Arsitektur Data
 
 wizdam-apis adalah **pure analysis engine** — tidak menyimpan hasil apapun secara permanen.  
-Semua persistensi data adalah tanggung jawab **Wizdam Sicola**.
+Semua persistensi data adalah tanggung jawab **Wizdam Scola**.
 
-### Pola `supplied_data` — Kirim data dari DB Wizdam Sicola
+### Pola `supplied_data` — Kirim data dari DB Wizdam Scola
 
-Jika Wizdam Sicola sudah memiliki data di DB, kirimkan dalam request body.  
+Jika Wizdam Scola sudah memiliki data di DB, kirimkan dalam request body.  
 wizdam-apis akan menggunakan data tersebut **tanpa melakukan cURL ke API eksternal**.
 
 ```json
@@ -88,12 +88,12 @@ wizdam-apis akan menggunakan data tersebut **tanpa melakukan cURL ke API ekstern
 }
 ```
 
-Response saat data disupply: `"data_source": "wizdam_sicola_db"`
+Response saat data disupply: `"data_source": "wizdam_scola_db"`
 
-### Pola `raw_data` — Simpan hasil ke DB Wizdam Sicola
+### Pola `raw_data` — Simpan hasil ke DB Wizdam Scola
 
 Ketika wizdam-apis mengambil data dari API eksternal (ORCID/Scopus/dll), response menyertakan field `raw_data` berisi data mentah beserta `fetched_at`.  
-Wizdam Sicola harus menyimpan ini ke tabelnya (citations_cache, author_profiles_cache, dll).
+Wizdam Scola harus menyimpan ini ke tabelnya (citations_cache, author_profiles_cache, dll).
 
 ```json
 {
@@ -114,7 +114,7 @@ Response saat data diambil dari API eksternal: `"data_source": "orcid_api"` / `"
 ## Override Bobot Analisis
 
 Semua endpoint SDG classify dan impact calculate menerima objek `weights` dalam request body.  
-Bobot dari Wizdam Sicola admin panel **selalu prioritas**; nilai default dalam kode hanya fallback.
+Bobot dari Wizdam Scola admin panel **selalu prioritas**; nilai default dalam kode hanya fallback.
 
 ### SDG Classify — override bobot + threshold:
 ```json
@@ -159,7 +159,7 @@ Client memanggil endpoint berulang kali dengan `next_offset` sampai mendapat `st
 - `offset` (int, default `0`) — posisi mulai batch
 - `batch_size` (int, default `20`, max `50`) — jumlah karya per request
 
-**Contoh alur (JavaScript/Wizdam Sicola):**
+**Contoh alur (JavaScript/Wizdam Scola):**
 ```javascript
 async function classifyWithBatch(orcid, endpoint) {
   let offset = 0;
@@ -243,7 +243,7 @@ Klasifikasi SDG dari teks, DOI, atau ORCID.
 }
 ```
 Gunakan **salah satu**: `title+abstract`, `doi`, atau `orcid`. Jika `orcid`, gunakan pola batch.  
-`supplied_works` — opsional, kirim data karya dari DB Wizdam Sicola untuk skip fetch ORCID.
+`supplied_works` — opsional, kirim data karya dari DB Wizdam Scola untuk skip fetch ORCID.
 
 **Response (title+abstract):**
 ```json
@@ -530,7 +530,7 @@ Analisis tren berdasarkan data karya peneliti.
     "peak_year": 2023,
     "total_works_analyzed": 75
   },
-  "data_source": "wizdam_sicola_db",
+  "data_source": "wizdam_scola_db",
   "api_version": "v1.0-trend"
 }
 ```
@@ -634,7 +634,7 @@ Rekomendasi kebijakan berbasis data riset.
 ---
 
 ### POST `/api/v1/admin/keys/revoke`
-Cabut API key (hanya untuk panggilan dari backend Wizdam Sicola).
+Cabut API key (hanya untuk panggilan dari backend Wizdam Scola).
 
 **Request body:**
 ```json

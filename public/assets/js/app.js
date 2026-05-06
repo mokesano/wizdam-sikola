@@ -1,5 +1,5 @@
 /**
- * Wizdam Sicola – JavaScript Utama
+ * Wizdam Scola – JavaScript Utama
  * Vanilla JS, tanpa framework/bundler.
  */
 

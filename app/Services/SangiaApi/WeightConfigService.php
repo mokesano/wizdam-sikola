@@ -8,7 +8,7 @@ use Wizdam\Database\DBConnector;
 
 /**
  * Memuat konfigurasi bobot analisis dari tabel `analysis_weight_configs`.
- * Admin panel Wizdam Sicola dapat mengubah bobot ini.
+ * Admin panel Wizdam Scola dapat mengubah bobot ini.
  * Nilai dalam kode hanya fallback jika DB belum dikonfigurasi.
  */
 class WeightConfigService

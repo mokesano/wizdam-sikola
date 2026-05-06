@@ -43,7 +43,7 @@ class ResearcherProfileHandler
             'avgPillars'  => $avgPillars,
             'field'       => $field,
             'search'      => $search,
-            'pageTitle'   => 'Peneliti Terdampak – Wizdam Sicola',
+            'pageTitle'   => 'Peneliti Terdampak – Wizdam Scola',
         ]);
 
         return Response::html($html);
@@ -123,7 +123,7 @@ class ResearcherProfileHandler
             'sdgTags'        => $sdgTags,
             'recentArticles' => $recentArticles,
             // Twig template menggunakan researcher.full_name dan researcher.orcid_id
-            'pageTitle'      => ($researcher['full_name'] ?? $orcid) . ' – Wizdam Sicola',
+            'pageTitle'      => ($researcher['full_name'] ?? $orcid) . ' – Wizdam Scola',
         ]);
 
         return Response::html($html);

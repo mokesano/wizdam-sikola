@@ -1,6 +1,6 @@
 {
-    "name": "wizdam/sicola",
-    "description": "Wizdam Sicola – Platform Pengukuran Dampak Riset",
+    "name": "wizdam/scola",
+    "description": "Wizdam Scola – Platform Pengukuran Dampak Riset",
     "type": "project",
     "license": "MIT",
     "require": {

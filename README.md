@@ -1,10 +1,10 @@
-# Wizdam Sicola – Platform Pengukuran Dampak Riset
+# Wizdam Scola – Platform Pengukuran Dampak Riset
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/react-18.2.0-61DAFB.svg?logo=react)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/tailwindcss-3.3.3-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com/)
 
-Wizdam Sicola adalah platform berbasis web yang dirancang untuk mengukur dan menganalisis dampak riset khususnya di Indonesia. Aplikasi ini menyediakan dashboard interaktif dengan visualisasi data seperti tren publikasi, peta kolaborasi peneliti, dan peringkat peneliti berdasarkan dampak riset.
+Wizdam Scola adalah platform berbasis web yang dirancang untuk mengukur dan menganalisis dampak riset khususnya di Indonesia. Aplikasi ini menyediakan dashboard interaktif dengan visualisasi data seperti tren publikasi, peta kolaborasi peneliti, dan peringkat peneliti berdasarkan dampak riset.
 
 > **Live Demo:** [wizdam.sangia.org](https://wizdam.sangia.org)
 
@@ -41,8 +41,8 @@ Wizdam Sicola adalah platform berbasis web yang dirancang untuk mengukur dan men
 ### Langkah-langkah
 ```bash
 # 1. Clone repositori
-git clone https://github.com/mokesano/wizdam-sicola.git
-cd wizdam-sicola
+git clone https://github.com/mokesano/wizdam-scola.git
+cd wizdam-scola
 
 # 2. Instal dependensi
 npm install
@@ -71,7 +71,7 @@ Hasil build akan disimpan di folder `build/`, siap untuk dideploy ke layanan hos
 ## 📁 Struktur Proyek
 
 ```
-wizdam-sicola/
+wizdam-scola/
 ├── public/                 # Aset statis (index.html, favicon, dll.)
 ├── src/
 │   ├── components/         # Komponen React
@@ -114,7 +114,7 @@ Proyek ini dilisensikan di bawah **MIT License** – lihat file [LICENSE](LICENS
 Dikembangkan oleh [@mokesano](https://github.com/mokesano)
 
 - **Website:** [wizdam.sangia.org](https://wizdam.sangia.org)
-- **Issues:** [GitHub Issues](https://github.com/mokesano/wizdam-sicola/issues)
+- **Issues:** [GitHub Issues](https://github.com/mokesano/wizdam-scola/issues)
 
 ---
 

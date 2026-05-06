@@ -1,20 +1,20 @@
-# Catatan Pengembangan untuk Wizdam Sicola
+# Catatan Pengembangan untuk Wizdam Scola
 
-Dokumen ini berisi poin-poin penting yang harus diperhatikan saat membangun interface Wizdam Sicola sebagai frontend dari Sangia API Engine (wizdam-apis).
+Dokumen ini berisi poin-poin penting yang harus diperhatikan saat membangun interface Wizdam Scola sebagai frontend dari Sangia API Engine (wizdam-apis).
 
 ---
 
 ## 1. Autentikasi API Key
 
-Wizdam Sicola adalah **satu-satunya** yang men-generate API key untuk user.
+Wizdam Scola adalah **satu-satunya** yang men-generate API key untuk user.
 
-### Generate key (PHP — gunakan di backend Wizdam Sicola):
+### Generate key (PHP — gunakan di backend Wizdam Scola):
 ```php
 use Sangia\Gateway\ApiKeyMiddleware;
 
 $secret = env('WIZDAM_SHARED_SECRET'); // harus identik di kedua sistem
 $key    = ApiKeyMiddleware::generateKey($userId, $secret);
-// Simpan $key ke tabel users (kolom api_key) di wizdam_sicola DB
+// Simpan $key ke tabel users (kolom api_key) di wizdam_scola DB
 // Kirim $key ke user melalui UI
 ```
 
@@ -22,7 +22,7 @@ $key    = ApiKeyMiddleware::generateKey($userId, $secret);
 ```php
 // Panggil endpoint admin wizdam-apis
 POST /api/v1/admin/keys/revoke
-X-API-Key: {service_key_wizdam_sicola}
+X-API-Key: {service_key_wizdam_scola}
 { "key": "wz_42_1719000000_a3f8e2c1d5b7" }
 ```
 
@@ -32,7 +32,7 @@ X-API-Key: {service_key_wizdam_sicola}
 
 ## 2. Pengelolaan Bobot Analisis (Admin Panel)
 
-Wizdam Sicola mengontrol penuh semua bobot analisis melalui admin panel.  
+Wizdam Scola mengontrol penuh semua bobot analisis melalui admin panel.  
 Bobot dikirimkan ke wizdam-apis dalam setiap request — nilai dalam kode hanya fallback.
 
 ### Bobot yang bisa dikonfigurasi:
@@ -69,7 +69,7 @@ Kirim di body request `POST /api/v1/sdg/{version}/classify`.
 ```
 Kirim di body request `POST /api/v1/impact/calculate`.
 
-### Rekomendasi tabel di DB Wizdam Sicola:
+### Rekomendasi tabel di DB Wizdam Scola:
 ```sql
 CREATE TABLE analysis_weight_configs (
   id          INT PRIMARY KEY AUTO_INCREMENT,
@@ -84,21 +84,21 @@ Saat memanggil API, load config dari DB dan sertakan dalam request body.
 
 ---
 
-## 3. Arsitektur Data — Wizdam Sicola sebagai Sumber Kebenaran Tunggal
+## 3. Arsitektur Data — Wizdam Scola sebagai Sumber Kebenaran Tunggal
 
 wizdam-apis adalah **pure analysis engine** — tidak menyimpan hasil apapun secara permanen.  
-Semua persistensi adalah tanggung jawab Wizdam Sicola.
+Semua persistensi adalah tanggung jawab Wizdam Scola.
 
-### Empat jalur masuk data ke Wizdam Sicola:
+### Empat jalur masuk data ke Wizdam Scola:
 
 1. **Direct API call** — wizdam-apis fetch dari ORCID/Scopus/dll, lalu mengembalikan `raw_data` untuk disimpan
-2. **Input dari UI** — user mengisi data social/economic, upload karya secara manual di Wizdam Sicola
+2. **Input dari UI** — user mengisi data social/economic, upload karya secara manual di Wizdam Scola
 3. **Registrasi + sync** — user koneksikan akun ORCID/Scopus saat mendaftar, data di-sync ke DB
-4. **Proactive crawler** — Wizdam Sicola menjalankan crawler mandiri untuk memperbarui data secara berkala
+4. **Proactive crawler** — Wizdam Scola menjalankan crawler mandiri untuk memperbarui data secara berkala
 
 ### Pola `supplied_data` — Kirim data dari DB ke wizdam-apis
 
-Jika Wizdam Sicola sudah memiliki data di DB, kirimkan dalam request body.  
+Jika Wizdam Scola sudah memiliki data di DB, kirimkan dalam request body.  
 wizdam-apis menggunakan data tersebut tanpa cURL ke API eksternal.
 
 ```json
@@ -127,14 +127,14 @@ wizdam-apis menggunakan data tersebut tanpa cURL ke API eksternal.
 }
 ```
 
-Response saat data disupply dari DB: `"data_source": "wizdam_sicola_db"`  
+Response saat data disupply dari DB: `"data_source": "wizdam_scola_db"`  
 wizdam-apis tidak akan melakukan cURL ke ORCID/Scopus.
 
 ### Pola `raw_data` — Simpan data yang baru diambil ke DB
 
 Ketika wizdam-apis terpaksa fetch dari API eksternal (karena data tidak disupply),  
 response menyertakan field `raw_data` dengan data mentah dan `fetched_at`.  
-**Wizdam Sicola harus menyimpan ini ke tabelnya** agar request berikutnya bisa menggunakan `supplied_data`.
+**Wizdam Scola harus menyimpan ini ke tabelnya** agar request berikutnya bisa menggunakan `supplied_data`.
 
 ```php
 // Contoh: menyimpan raw_data setelah menerima response dari wizdam-apis
@@ -152,7 +152,7 @@ if (isset($response['raw_data'])) {
 }
 ```
 
-### Rekomendasi tabel cache di DB Wizdam Sicola:
+### Rekomendasi tabel cache di DB Wizdam Scola:
 ```sql
 -- Profil peneliti (ORCID + Scopus)
 CREATE TABLE author_profiles_cache (
@@ -257,9 +257,9 @@ Wizdam Impact Score menjadi **powerful** jika pilar Social dan Economic diisi de
 | `startup_spinoffs` | Input manual / data DIKTI |
 
 ### Rekomendasi flow data:
-1. User mengisi data social/economic di profil Wizdam Sicola
+1. User mengisi data social/economic di profil Wizdam Scola
 2. Admin dapat memverifikasi dan menambahkan data dari crawler
-3. Data disimpan di tabel `researcher_impact_inputs` di DB Wizdam Sicola
+3. Data disimpan di tabel `researcher_impact_inputs` di DB Wizdam Scola
 4. Saat memanggil `/api/v1/impact/calculate`, load dari DB dan kirim ke API
 
 ```sql
@@ -298,7 +298,7 @@ Simpan hasilnya di `analysis_history` untuk ditampilkan di dashboard tanpa re-co
 
 ### Policy Recommendation (`POST /api/v1/recommendation/policy`)
 
-Kirim `research_landscape` dari DB Wizdam Sicola (hasil agregat analisis sebelumnya):
+Kirim `research_landscape` dari DB Wizdam Scola (hasil agregat analisis sebelumnya):
 
 ```php
 $landscape = [
@@ -318,10 +318,10 @@ Semakin lengkap `research_landscape`, semakin relevan rekomendasi yang dihasilka
 
 ---
 
-## 7. Arsitektur yang Disarankan di Wizdam Sicola
+## 7. Arsitektur yang Disarankan di Wizdam Scola
 
 ```
-Wizdam Sicola (Frontend + Backend PHP/Laravel)
+Wizdam Scola (Frontend + Backend PHP/Laravel)
 │
 ├── Admin Panel
 │   ├── User Management (generate/revoke API keys)
@@ -398,7 +398,7 @@ class SangiaApiClient {
 
 ## 8. CORS
 
-Tambahkan domain Wizdam Sicola ke `CORS_ALLOWED_ORIGINS` di `.env` wizdam-apis:
+Tambahkan domain Wizdam Scola ke `CORS_ALLOWED_ORIGINS` di `.env` wizdam-apis:
 ```
 CORS_ALLOWED_ORIGINS=https://app.wizdam.id,https://admin.wizdam.id,http://localhost:3000
 ```
@@ -407,7 +407,7 @@ CORS_ALLOWED_ORIGINS=https://app.wizdam.id,https://admin.wizdam.id,http://localh
 
 ## 9. Monitoring & Logging
 
-Wizdam Sicola sebaiknya menyimpan log setiap call ke wizdam-apis di DB:
+Wizdam Scola sebaiknya menyimpan log setiap call ke wizdam-apis di DB:
 ```sql
 CREATE TABLE api_call_logs (
   id            BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -416,12 +416,12 @@ CREATE TABLE api_call_logs (
   params        JSON,
   status        VARCHAR(20),
   duration_ms   INT,
-  data_source   VARCHAR(50),   -- 'wizdam_sicola_db' atau 'orcid_api' dll
+  data_source   VARCHAR(50),   -- 'wizdam_scola_db' atau 'orcid_api' dll
   called_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-Log `data_source` berguna untuk mengukur efisiensi: seberapa sering Wizdam Sicola berhasil supply data dari DB vs harus fetch ke API eksternal.
+Log `data_source` berguna untuk mengukur efisiensi: seberapa sering Wizdam Scola berhasil supply data dari DB vs harus fetch ke API eksternal.
 
 ---
 
@@ -444,15 +444,15 @@ Semua response API mengikuti pola:
 ```json
 {
   "status": "success" | "error" | "processing",
-  "data_source": "wizdam_sicola_db" | "orcid_api" | "scopus_api" | "external_apis",
+  "data_source": "wizdam_scola_db" | "orcid_api" | "scopus_api" | "external_apis",
   "cache_info": { "from_cache": false },
   "raw_data": { "...": "...", "fetched_at": "2025-01-01T00:00:00+00:00" },
   "api_version": "v1.1-batch"
 }
 ```
 
-- `data_source: "wizdam_sicola_db"` → Wizdam Sicola supply data, tidak ada fetch eksternal
+- `data_source: "wizdam_scola_db"` → Wizdam Scola supply data, tidak ada fetch eksternal
 - `data_source: "orcid_api"` → wizdam-apis fetch dari ORCID, simpan `raw_data` ke DB
-- `raw_data` hanya ada saat `data_source` bukan `wizdam_sicola_db`
+- `raw_data` hanya ada saat `data_source` bukan `wizdam_scola_db`
 
 Selalu periksa `status` sebelum memproses data. Jika `"processing"`, lakukan loop batch.

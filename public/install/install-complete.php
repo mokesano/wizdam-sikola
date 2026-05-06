@@ -3,7 +3,7 @@
         <i class="fas fa-check text-green-600 text-4xl"></i>
     </div>
     <h2 class="text-3xl font-bold text-gray-800 mb-4">Instalasi Berhasil!</h2>
-    <p class="text-gray-600 mb-8">Aplikasi Wizdam Sicola telah siap digunakan.</p>
+    <p class="text-gray-600 mb-8">Aplikasi Wizdam Scola telah siap digunakan.</p>
 
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 text-left max-w-md mx-auto">
         <h3 class="font-semibold text-blue-800 mb-3">Langkah Selanjutnya:</h3>

@@ -1,8 +1,8 @@
-# Arsitektur Aplikasi Wizdam Sicola
+# Arsitektur Aplikasi Wizdam Scola
 
 ## Gambaran Umum
 
-Wizdam Sicola adalah platform pengukuran dampak riset Indonesia yang terintegrasi dengan Wizdam APIs untuk analisis SDGs, Wizdam Impact Score, dan berbagai fitur crawling data akademik.
+Wizdam Scola adalah platform pengukuran dampak riset Indonesia yang terintegrasi dengan Wizdam APIs untuk analisis SDGs, Wizdam Impact Score, dan berbagai fitur crawling data akademik.
 
 ## Struktur Domain
 
@@ -232,7 +232,7 @@ APP_URL=https://www.sangia.org
 
 DB_HOST=localhost
 DB_PORT=3306
-DB_DATABASE=wizdam_sicola
+DB_DATABASE=wizdam_scola
 DB_USERNAME=user
 DB_PASSWORD=secret
 
