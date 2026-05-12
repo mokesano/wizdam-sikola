@@ -1,4 +1,3 @@
-```
 # Cache and test results
 .phpunit.cache/
 
@@ -43,4 +42,6 @@ htmlcov/
 .Python
 *.so
 *.egg-info/
-```
+
+# Composer
+composer.lock
