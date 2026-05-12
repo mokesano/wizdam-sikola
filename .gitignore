@@ -1,21 +1,31 @@
 ```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+
 # Dependencies
 vendor/
+composer.lock
 
 # Logs and temp files
 *.log
 *.tmp
-*.swp
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# Tests
-.phpunit.cache/
+# Editors
+.vscode/
+.idea/
 
-# Composer
-composer.lock
+# Test coverage
+.coverage
+coverage/
+htmlcov/
 
+# OS generated files
+.DS_Store
+Thumbs.db
 ```

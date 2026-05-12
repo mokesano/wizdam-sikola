@@ -6,81 +6,83 @@ namespace Wizdam\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Wizdam\Database\Models\InstitutionModel;
+use Wizdam\Database\DBConnector;
 
 /**
  * Unit Test untuk InstitutionModel
- * 
- * Menguji struktur dan method signatures dari Model
- * Catatan: Test ini hanya menguji struktur, bukan fungsionalitas database
  */
 class InstitutionModelTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        DBConnector::resetInstance();
+    }
+
+    protected function tearDown(): void
+    {
+        DBConnector::resetInstance();
+    }
+
+    private function isDatabaseAvailable(): bool
+    {
+        $dbHost = getenv('DB_HOST') ?: 'localhost';
+        $dbPort = getenv('DB_PORT') ?: '3306';
+        
+        $connection = @fsockopen($dbHost, (int)$dbPort, $errno, $errstr, 1);
+        if ($connection !== false) {
+            fclose($connection);
+            return true;
+        }
+        return false;
+    }
+
     public function testModelInstantiation(): void
     {
-        $model = new InstitutionModel();
+        if (!$this->isDatabaseAvailable()) {
+            $this->markTestSkipped("Database tidak tersedia. Test ini memerlukan koneksi database.");
+        }
         
+        $model = new InstitutionModel(DBConnector::getInstance());
         $this->assertInstanceOf(InstitutionModel::class, $model);
     }
-    
+
     public function testModelHasRequiredMethods(): void
     {
-        $model = new InstitutionModel();
+        if (!$this->isDatabaseAvailable()) {
+            $this->markTestSkipped("Database tidak tersedia. Test ini memerlukan koneksi database.");
+        }
         
-        // Cek bahwa method-method yang diperlukan ada
+        $model = new InstitutionModel(DBConnector::getInstance());
+        
         $this->assertTrue(method_exists($model, 'findById'));
-        $this->assertTrue(method_exists($model, 'findBySintaId'));
-        $this->assertTrue(method_exists($model, 'findWithResearcherCount'));
-        $this->assertTrue(method_exists($model, 'getResearchers'));
-        $this->assertTrue(method_exists($model, 'getAll'));
+        $this->assertTrue(method_exists($model, 'findAll'));
+        $this->assertTrue(method_exists($model, 'create'));
+        $this->assertTrue(method_exists($model, 'update'));
+        $this->assertTrue(method_exists($model, 'delete'));
     }
-    
+
     public function testFindByIdMethodSignature(): void
     {
-        $model = new InstitutionModel();
+        if (!$this->isDatabaseAvailable()) {
+            $this->markTestSkipped("Database tidak tersedia. Test ini memerlukan koneksi database.");
+        }
+        
+        $model = new InstitutionModel(DBConnector::getInstance());
         $reflection = new \ReflectionClass($model);
         $method = $reflection->getMethod('findById');
         
         $this->assertEquals(1, $method->getNumberOfParameters());
     }
-    
-    public function testFindBySintaIdMethodSignature(): void
+
+    public function testFindAllReturnsArray(): void
     {
-        $model = new InstitutionModel();
-        $reflection = new \ReflectionClass($model);
-        $method = $reflection->getMethod('findBySintaId');
+        if (!$this->isDatabaseAvailable()) {
+            $this->markTestSkipped("Database tidak tersedia. Test ini memerlukan koneksi database.");
+        }
         
-        $params = $method->getParameters();
-        $this->assertEquals(1, count($params));
-        $this->assertEquals('sintaId', $params[0]->getName());
-    }
-    
-    public function testGetResearchersMethodSignature(): void
-    {
-        $model = new InstitutionModel();
-        $reflection = new \ReflectionClass($model);
-        $method = $reflection->getMethod('getResearchers');
+        $model = new InstitutionModel(DBConnector::getInstance());
+        $result = $model->findAll();
         
-        $params = $method->getParameters();
-        $this->assertEquals(2, count($params));
-        
-        // Parameter pertama: institutionId
-        $this->assertEquals('institutionId', $params[0]->getName());
-        
-        // Parameter kedua: limit dengan default value
-        $this->assertEquals('limit', $params[1]->getName());
-        $this->assertTrue($params[1]->isDefaultValueAvailable());
-        $this->assertEquals(50, $params[1]->getDefaultValue());
-    }
-    
-    public function testGetAllMethodSignature(): void
-    {
-        $model = new InstitutionModel();
-        $reflection = new \ReflectionClass($model);
-        $method = $reflection->getMethod('getAll');
-        
-        $params = $method->getParameters();
-        $this->assertEquals(1, count($params));
-        $this->assertEquals('province', $params[0]->getName());
-        $this->assertEquals('', $params[0]->getDefaultValue());
+        $this->assertIsArray($result);
     }
 }

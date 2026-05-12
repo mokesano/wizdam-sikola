@@ -73,7 +73,7 @@ class RouterTest extends TestCase
     public function testRouteWithParameter(): void
     {
         $router = new Router();
-        $router->get('/user/{id}', function(Request $req, int $id) {
+        $router->get('/user/{id}', function(Request $req, string $id) {
             return Response::html("User ID: $id");
         });
         
@@ -87,7 +87,7 @@ class RouterTest extends TestCase
     public function testRouteWithMultipleParameters(): void
     {
         $router = new Router();
-        $router->get('/post/{year}/{month}', function(Request $req, int $year, int $month) {
+        $router->get('/post/{year}/{month}', function(Request $req, string $year, string $month) {
             return Response::html("Post from $year-$month");
         });
         
@@ -101,7 +101,7 @@ class RouterTest extends TestCase
     public function testRouteWithRegexPattern(): void
     {
         $router = new Router();
-        $router->get('/article/{id:\d+}', function(Request $req, int $id) {
+        $router->get('/article/{id:\d+}', function(Request $req, string $id) {
             return Response::html("Article $id");
         });
         

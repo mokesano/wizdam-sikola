@@ -4,37 +4,90 @@ declare(strict_types=1);
 
 namespace Wizdam\Database;
 
+use PDO;
+
+/**
+ * Database Connector - Singleton pattern untuk koneksi database
+ * 
+ * Mendukung dependency injection untuk testing dengan menerima konfigurasi secara opsional
+ */
 class DBConnector
 {
     private static ?self $instance = null;
-    private \PDO $pdo;
+    private ?PDO $pdo = null;
+    private array $config = [];
 
-    private function __construct()
+    /**
+     * Constructor privat untuk singleton pattern
+     * 
+     * @param array|null $config Konfigurasi database opsional (untuk testing)
+     */
+    private function __construct(?array $config = null)
     {
-        $cfg = require BASE_PATH . '/config/database.php';
+        // Gunakan config dari parameter jika ada (untuk testing),否则 load dari file
+        if ($config !== null) {
+            $this->config = $config;
+        } else {
+            // Cek apakah BASE_PATH terdefinisi (production) atau gunakan fallback (testing)
+            $basePath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
+            $this->config = require $basePath . '/config/database.php';
+        }
 
-        $dsn = sprintf(
-            '%s:host=%s;port=%s;dbname=%s;charset=%s',
-            $cfg['driver'],
-            $cfg['host'],
-            $cfg['port'],
-            $cfg['database'],
-            $cfg['charset']
-        );
-
-        $this->pdo = new \PDO($dsn, $cfg['username'], $cfg['password'], $cfg['options']);
+        $this->initializeConnection();
     }
 
-    public static function getInstance(): self
+    /**
+     * Inisialisasi koneksi PDO
+     */
+    private function initializeConnection(): void
     {
-        if (self::$instance === null) {
-            self::$instance = new self();
+        $dsn = sprintf(
+            '%s:host=%s;port=%s;dbname=%s;charset=%s',
+            $this->config['driver'] ?? 'mysql',
+            $this->config['host'] ?? 'localhost',
+            $this->config['port'] ?? '3306',
+            $this->config['database'] ?? 'wizdam_scola',
+            $this->config['charset'] ?? 'utf8mb4'
+        );
+
+        $this->pdo = new PDO(
+            $dsn,
+            $this->config['username'] ?? 'root',
+            $this->config['password'] ?? '',
+            $this->config['options'] ?? [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]
+        );
+    }
+
+    /**
+     * Singleton instance dengan dukungan konfigurasi untuk testing
+     * 
+     * @param array|null $config Konfigurasi database opsional (untuk testing)
+     */
+    public static function getInstance(?array $config = null): self
+    {
+        if (self::$instance === null || $config !== null) {
+            self::$instance = new self($config);
         }
         return self::$instance;
     }
 
-    public function getPdo(): \PDO
+    /**
+     * Reset instance (untuk testing)
+     */
+    public static function resetInstance(): void
     {
+        self::$instance = null;
+    }
+
+    public function getPdo(): PDO
+    {
+        if ($this->pdo === null) {
+            throw new \RuntimeException('Database connection not initialized');
+        }
         return $this->pdo;
     }
 
