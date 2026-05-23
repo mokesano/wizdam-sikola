@@ -1,5 +1,6 @@
 <?php
 
+namespace Wizdam\Library;
 /**
  * WizdamApiContractValidator.php
  *
@@ -272,7 +273,7 @@ class WizdamApiContractValidator
     }
 }
 
-
+namespace Wizdam\Library;
 /**
  * Dilempar saat response tidak sesuai kontrak.
  * Tangkap di caller untuk fallback graceful.
@@ -285,6 +286,7 @@ class WizdamContractException extends \RuntimeException
     }
 }
 
+namespace Wizdam\Library;
 /**
  * Dilempar saat API mengembalikan status=error.
  * Berbeda dari ContractException — ini error bisnis, bukan struktural.
