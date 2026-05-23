@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * contract_selftest.php — v2 (dengan diagnostik lengkap)
  *
