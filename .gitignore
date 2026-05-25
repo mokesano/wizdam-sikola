@@ -44,7 +44,3 @@ htmlcov/
 .Python
 *.so
 *.egg-info/
-
-# Composer
-composer.lock
-package-json.lock
