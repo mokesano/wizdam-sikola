@@ -17,38 +17,39 @@ name: Codacy Security Scan
 
 on:
   push:
-    branches: [ "master", "develop", "production" ]  # ✅ Sesuaikan dengan workflow branch promotion Anda
+    branches: [ "master", "develop", "production" ]  # ✅ Sangia-Scieco menggunakan 'master'
   pull_request:
     branches: [ "master", "develop", "production" ]
   schedule:
-    - cron: '35 15 * * 2'  # Tetap: Selasa 15:35 UTC
+    - cron: '35 15 * * 2'  # Selasa 15:35 UTC
 
 jobs:
   codacy-security-scan:
-    # ✅ Mencegah eksekusi pada fork PR yang tidak memiliki akses secrets
+    # Mencegah eksekusi pada fork PR tanpa akses secrets
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Codacy Security Scan
     runs-on: ubuntu-latest
     permissions:
-      contents: read              # Untuk actions/checkout
-      security-events: write      # Wajib untuk upload SARIF ke GitHub Code Scanning
+      contents: read              # Untuk checkout
+      security-events: write      # Wajib untuk upload SARIF
       actions: read               # Untuk status check
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Penting untuk analisis diff yang akurat
+          fetch-depth: 0  # Penting untuk analisis diff
 
-      # ✅ Setup PHP environment (karena project menggunakan PHP backend)
+      # ✅ Setup PHP environment (backend utama project)
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.1'  # Sesuaikan dengan versi PHP di composer.json
           tools: composer
           coverage: none
+          extensions: mbstring, pdo, pdo_mysql, json, curl
 
-      # ✅ Setup Node.js untuk frontend scanning
+      # ✅ Setup Node.js untuk frontend React + Vite
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -56,46 +57,70 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'package-lock.json'
 
-      # ✅ Install dependencies (opsional, tapi membantu Codacy memahami struktur)
-      - name: Install dependencies
+      # ✅ Install PHP dependencies
+      - name: Install PHP Dependencies
         run: |
-          if [ -f composer.json ]; then composer install --no-dev --no-interaction; fi
-          if [ -f package.json ]; then npm ci --ignore-scripts; fi
+          if [ -f composer.json ]; then
+            composer install --no-dev --no-interaction --prefer-dist
+          fi
 
-      # ✅ Run Codacy Analysis CLI dengan parameter yang benar
+      # ✅ Install JavaScript dependencies
+      - name: Install JS Dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund
+          fi
+
+      # ✅ Run Codacy Analysis CLI
       - name: Run Codacy Analysis
         uses: codacy/codacy-analysis-cli-action@v4.4.7
         with:
-          # ⚠️ Token opsional: jika tidak diisi, hasil hanya lokal (tidak dikirim ke Codacy dashboard)
+          # Token opsional - hapus jika hanya ingin SARIF lokal
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           
-          # ✅ Output SARIF untuk GitHub Code Scanning
+          # Output SARIF untuk GitHub Code Scanning
           output: results.sarif
           format: sarif
           
-          # ✅ Aktifkan mode kompatibilitas GitHub (parameter yang benar)
+          # Mode kompatibilitas GitHub Code Scanning
           code-scanning: true
           
-          # ✅ Force exit code 0 agar workflow tidak gagal meski ada temuan
+          # Force exit code 0 agar workflow tidak gagal
           max-allowed-issues: 2147483647
           
-          # ✅ Filter: skip folder yang tidak relevan untuk mengurangi false positive
+          # ✅ Exclude paths yang tidak relevan untuk Sangia-Scieco
           exclude-paths: >-
             **/node_modules/**,
             **/vendor/**,
+            **/.phpunit.cache/**,
             **/cache/**,
             **/logs/**,
             **/*.min.js,
             **/dist/**,
-            **/build/**
+            **/build/**,
+            **/UIUX-design/**,
+            **/docs/**,
+            **/database_*.sql,
+            **/public/assets/**,
+            **/src/**/*.test.js,
+            **/tests/**
           
-          # ✅ Verbosity untuk debugging (bisa dihapus jika sudah stabil)
+          # ✅ Filter untuk PHP & JavaScript/React
           verbose: true
 
-      # ✅ Upload SARIF ke GitHub Code Scanning (dengan validasi file)
+      # ✅ Upload SARIF ke GitHub Code Scanning
       - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v3  # ✅ Gunakan v3 yang stabil
-        if: always() && hashFiles('results.sarif') != ''  # ✅ Hanya upload jika file SARIF ada
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('results.sarif') != ''
         with:
           sarif_file: results.sarif
-          category: codacy  # ✅ Unik, penting jika ada multiple tools
+          category: codacy-security
+
+      # ✅ Optional: Upload hasil sebagai artifact untuk debugging
+      - name: Upload SARIF as Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codacy-sarif-results
+          path: results.sarif
+          retention-days: 7
