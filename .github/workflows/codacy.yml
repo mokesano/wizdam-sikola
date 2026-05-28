@@ -17,9 +17,9 @@ name: Codacy Security Scan
 
 on:
   push:
-    branches: [ "main", "develop", "production" ]  # ✅ Sesuaikan dengan workflow branch promotion Anda
+    branches: [ "master", "develop", "production" ]  # ✅ Sesuaikan dengan workflow branch promotion Anda
   pull_request:
-    branches: [ "main", "develop", "production" ]
+    branches: [ "master", "develop", "production" ]
   schedule:
     - cron: '35 15 * * 2'  # Tetap: Selasa 15:35 UTC
 
