@@ -39,55 +39,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Setup PHP
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
-          tools: composer
-          coverage: none
-          extensions: mbstring, pdo, pdo_mysql, json, curl
-
-      # ✅ Setup Node.js TANPA cache-dependency-path
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          # ✅ Hapus cache-dependency-path yang menyebabkan error
-
-      # Install PHP dependencies
-      - name: Install PHP Dependencies
-        run: |
-          if [ -f composer.json ]; then
-            composer install --no-dev --no-interaction --prefer-dist
-          fi
-
-      # ✅ Install JS dependencies dengan fallback
-      - name: Install JS Dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci --ignore-scripts --no-audit --no-fund
-          elif [ -f yarn.lock ]; then
-            yarn install --frozen-lockfile --ignore-scripts
-          elif [ -f package.json ]; then
-            npm install --ignore-scripts --no-audit --no-fund
-          else
-            echo "No Node.js dependencies found"
-          fi
-
-      # Run Codacy Analysis
+      # ✅ Run Codacy Analysis CLI - TANPA instalasi dependencies
       - name: Run Codacy Analysis
         uses: codacy/codacy-analysis-cli-action@v4.4.7
         with:
+          # Token opsional - hapus jika hanya ingin SARIF lokal untuk GitHub
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          
+          # Output SARIF untuk GitHub Code Scanning
           output: results.sarif
           format: sarif
+          
+          # Mode kompatibilitas GitHub Code Scanning
           code-scanning: true
+          
+          # Force exit code 0 agar workflow tidak gagal karena temuan
           max-allowed-issues: 2147483647
+          
+          # ✅ Exclude paths untuk mengurangi false positive & skip folder tidak relevan
           exclude-paths: >-
             **/node_modules/**,
             **/vendor/**,
-            **/.phpunit.cache/**,
             **/cache/**,
             **/logs/**,
             **/*.min.js,
@@ -97,10 +69,13 @@ jobs:
             **/docs/**,
             **/database_*.sql,
             **/public/assets/**,
-            **/tests/**
+            **/tests/**,
+            **/.phpunit.cache/**
+          
+          # Verbosity untuk debugging (opsional, bisa dihapus jika sudah stabil)
           verbose: true
 
-      # Upload SARIF
+      # ✅ Upload SARIF ke GitHub Code Scanning
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         if: always() && hashFiles('results.sarif') != ''
@@ -108,7 +83,7 @@ jobs:
           sarif_file: results.sarif
           category: codacy-security
 
-      # Upload artifact
+      # ✅ Optional: Upload SARIF sebagai artifact untuk debugging
       - name: Upload SARIF as Artifact
         uses: actions/upload-artifact@v4
         if: always()
