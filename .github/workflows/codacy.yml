@@ -17,78 +17,73 @@ name: Codacy Security Scan
 
 on:
   push:
-    branches: [ "master", "develop", "production" ]  # ✅ Sangia-Scieco menggunakan 'master'
+    branches: [ "master", "develop", "production" ]
   pull_request:
     branches: [ "master", "develop", "production" ]
   schedule:
-    - cron: '35 15 * * 2'  # Selasa 15:35 UTC
+    - cron: '35 15 * * 2'
 
 jobs:
   codacy-security-scan:
-    # Mencegah eksekusi pada fork PR tanpa akses secrets
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Codacy Security Scan
     runs-on: ubuntu-latest
     permissions:
-      contents: read              # Untuk checkout
-      security-events: write      # Wajib untuk upload SARIF
-      actions: read               # Untuk status check
+      contents: read
+      security-events: write
+      actions: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Penting untuk analisis diff
+          fetch-depth: 0
 
-      # ✅ Setup PHP environment (backend utama project)
+      # Setup PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'  # Sesuaikan dengan versi PHP di composer.json
+          php-version: '8.1'
           tools: composer
           coverage: none
           extensions: mbstring, pdo, pdo_mysql, json, curl
 
-      # ✅ Setup Node.js untuk frontend React + Vite
+      # ✅ Setup Node.js TANPA cache-dependency-path
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          # ✅ Hapus cache-dependency-path yang menyebabkan error
 
-      # ✅ Install PHP dependencies
+      # Install PHP dependencies
       - name: Install PHP Dependencies
         run: |
           if [ -f composer.json ]; then
             composer install --no-dev --no-interaction --prefer-dist
           fi
 
-      # ✅ Install JavaScript dependencies
+      # ✅ Install JS dependencies dengan fallback
       - name: Install JS Dependencies
         run: |
-          if [ -f package.json ]; then
+          if [ -f package-lock.json ]; then
             npm ci --ignore-scripts --no-audit --no-fund
+          elif [ -f yarn.lock ]; then
+            yarn install --frozen-lockfile --ignore-scripts
+          elif [ -f package.json ]; then
+            npm install --ignore-scripts --no-audit --no-fund
+          else
+            echo "No Node.js dependencies found"
           fi
 
-      # ✅ Run Codacy Analysis CLI
+      # Run Codacy Analysis
       - name: Run Codacy Analysis
         uses: codacy/codacy-analysis-cli-action@v4.4.7
         with:
-          # Token opsional - hapus jika hanya ingin SARIF lokal
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          
-          # Output SARIF untuk GitHub Code Scanning
           output: results.sarif
           format: sarif
-          
-          # Mode kompatibilitas GitHub Code Scanning
           code-scanning: true
-          
-          # Force exit code 0 agar workflow tidak gagal
           max-allowed-issues: 2147483647
-          
-          # ✅ Exclude paths yang tidak relevan untuk Sangia-Scieco
           exclude-paths: >-
             **/node_modules/**,
             **/vendor/**,
@@ -102,13 +97,10 @@ jobs:
             **/docs/**,
             **/database_*.sql,
             **/public/assets/**,
-            **/src/**/*.test.js,
             **/tests/**
-          
-          # ✅ Filter untuk PHP & JavaScript/React
           verbose: true
 
-      # ✅ Upload SARIF ke GitHub Code Scanning
+      # Upload SARIF
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         if: always() && hashFiles('results.sarif') != ''
@@ -116,7 +108,7 @@ jobs:
           sarif_file: results.sarif
           category: codacy-security
 
-      # ✅ Optional: Upload hasil sebagai artifact untuk debugging
+      # Upload artifact
       - name: Upload SARIF as Artifact
         uses: actions/upload-artifact@v4
         if: always()
