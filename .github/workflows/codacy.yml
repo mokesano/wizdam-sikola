@@ -11,53 +11,83 @@
 # For more information on Codacy Analysis CLI in general, see
 # https://github.com/codacy/codacy-analysis-cli.
 # .github/workflows/codacy-security-scan.yml
+# .github/workflows/codacy.yml
+
 name: Codacy Security Scan
 
 on:
   push:
-    branches: [ "develop", "master", "production" ]
+    branches: [ "master", "develop", "production" ]
   pull_request:
-    branches: [ "develop", "master", "production" ]
+    branches: [ "master", "develop", "production" ]
   schedule:
-    - cron: '33 18 * * 1'  # Setiap Senin pukul 18:33 UTC
+    - cron: '35 15 * * 2'
 
 jobs:
   codacy-security-scan:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Codacy Security Scan
     runs-on: ubuntu-latest
     permissions:
-      contents: read              # Untuk actions/checkout
-      security-events: write      # Wajib untuk upload SARIF ke GitHub
-      actions: read               # Untuk status check pada private repo
-    
+      contents: read
+      security-events: write
+      actions: read
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Penting untuk analisis diff yang akurat
+          fetch-depth: 0
 
-      - name: Run Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@v4.4.7  # Gunakan version tag resmi [[1]]
+      # ✅ Run Codacy Analysis CLI - TANPA instalasi dependencies
+      - name: Run Codacy Analysis
+        uses: codacy/codacy-analysis-cli-action@v4.4.7
         with:
-          # Token proyek Codacy (opsional jika hanya ingin generate SARIF lokal)
+          # Token opsional - hapus jika hanya ingin SARIF lokal untuk GitHub
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           
           # Output SARIF untuk GitHub Code Scanning
           output: results.sarif
           format: sarif
           
-          # Kompatibilitas dengan GitHub Code Scanning
-          gh-code-scanning-compat: true
+          # Mode kompatibilitas GitHub Code Scanning
+          code-scanning: true
           
-          # Force exit code 0 agar SARIF tetap ter-generate meski ada issue
+          # Force exit code 0 agar workflow tidak gagal karena temuan
           max-allowed-issues: 2147483647
           
-          # Verbosity untuk debugging
+          # ✅ Exclude paths untuk mengurangi false positive & skip folder tidak relevan
+          exclude-paths: >-
+            **/node_modules/**,
+            **/vendor/**,
+            **/cache/**,
+            **/logs/**,
+            **/*.min.js,
+            **/dist/**,
+            **/build/**,
+            **/UIUX-design/**,
+            **/docs/**,
+            **/database_*.sql,
+            **/public/assets/**,
+            **/tests/**,
+            **/.phpunit.cache/**
+          
+          # Verbosity untuk debugging (opsional, bisa dihapus jika sudah stabil)
           verbose: true
 
-      - name: Upload SARIF to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3  # Gunakan tag stabil
-        if: always()  # Tetap upload meski step sebelumnya warning/error
+      # ✅ Upload SARIF ke GitHub Code Scanning
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('results.sarif') != ''
         with:
           sarif_file: results.sarif
-          category: codacy-security  # Penting jika ada multiple tools
+          category: codacy-security
+
+      # ✅ Optional: Upload SARIF sebagai artifact untuk debugging
+      - name: Upload SARIF as Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codacy-sarif-results
+          path: results.sarif
+          retention-days: 7

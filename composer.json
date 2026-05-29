@@ -3,9 +3,6 @@
     "description": "Wizdam Scola – Platform Pengukuran Dampak Riset",
     "type": "project",
     "license": "MIT",
-    "config": {
-        "vendor-dir": "library"
-    },
     "require": {
         "php": ">=8.1",
         "delight-im/auth": "^7.0",
