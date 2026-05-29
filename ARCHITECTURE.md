@@ -1,8 +1,8 @@
-# Arsitektur Aplikasi Wizdam Scola
+# Arsitektur Aplikasi Sangia Scieco
 
 ## Gambaran Umum
 
-Wizdam Scola adalah platform pengukuran dampak riset Indonesia yang terintegrasi dengan Wizdam APIs untuk analisis SDGs, Wizdam Impact Score, dan berbagai fitur crawling data akademik.
+Sangia Scieco adalah platform pengukuran dampak riset Indonesia yang terintegrasi dengan Wizdam APIs untuk analisis SDGs, Wizdam Impact Score, dan berbagai fitur crawling data akademik.
 
 ## Struktur Domain
 

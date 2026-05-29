@@ -67,7 +67,7 @@ class UserDashboardHandler
             'scoreHistory'  => $scoreHistory,
             'recentWork'    => $recentWork,
             'notifications' => $notifications,
-            'pageTitle'     => 'Dashboard Saya – Wizdam Scola',
+            'pageTitle'     => 'Dashboard Saya – Sangia Scieco',
         ]);
     }
 
@@ -117,7 +117,7 @@ class UserDashboardHandler
             'scoreHistory'  => $scoreHistory,
             'recentWork'    => $recentWork,
             'notifications' => $notifications,
-            'pageTitle'     => 'Dashboard Saya – Wizdam Scola',
+            'pageTitle'     => 'Dashboard Saya – Sangia Scieco',
         ]);
 
         return Response::html($html);

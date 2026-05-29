@@ -431,7 +431,7 @@ class OaiPmhHarvester
     // Normalisasi dan persistensi
     // ──────────────────────────────────────────────────────────────────────────
 
-    /** Normalisasi semua format ke skema artikel Wizdam Scola. */
+    /** Normalisasi semua format ke skema artikel Sangia Scieco. */
     private function normalizeArticle(array $raw): ?array
     {
         $title = trim($raw['title'] ?? '');

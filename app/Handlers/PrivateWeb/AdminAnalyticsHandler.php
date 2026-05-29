@@ -77,7 +77,7 @@ class AdminAnalyticsHandler
             'scoreDistribution' => $scoreDistribution,
             'topInstitutions'   => $topInstitutions,
             'recentLogs'        => $recentLogs,
-            'pageTitle'         => 'Admin Analytics – Wizdam Scola',
+            'pageTitle'         => 'Admin Analytics – Sangia Scieco',
         ]);
     }
 
@@ -139,7 +139,7 @@ class AdminAnalyticsHandler
             'scoreDistribution' => $scoreDistribution,
             'topInstitutions'   => $topInstitutions,
             'recentLogs'        => $recentLogs,
-            'pageTitle'         => 'Admin Analytics – Wizdam Scola',
+            'pageTitle'         => 'Admin Analytics – Sangia Scieco',
         ]);
 
         return Response::html($html);

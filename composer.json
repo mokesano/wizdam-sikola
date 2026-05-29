@@ -1,6 +1,6 @@
 {
-    "name": "wizdam/scola",
-    "description": "Wizdam Scola – Platform Pengukuran Dampak Riset",
+    "name": "sangia/scieco",
+    "description": "Sangia Scieco sebagai Platform Pengukuran Dampak Riset",
     "type": "project",
     "license": "MIT",
     "require": {

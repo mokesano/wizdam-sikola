@@ -1,5 +1,5 @@
 -- ============================================================
--- Wizdam Scola — DB Migration v2
+-- Sangia Scieco — DB Migration v2
 -- Tabel pendukung integrasi Sangia API Engine
 -- Jalankan setelah database_schema_full.sql
 -- ============================================================

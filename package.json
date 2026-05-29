@@ -1,5 +1,6 @@
 {
   "name": "sangia-scieco",
+  "description": "Root scripts for Sangia Scieco PHP and React Hybrid",
   "version": "0.2.0",
   "private": true,
   "type": "module",

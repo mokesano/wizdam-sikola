@@ -1,5 +1,5 @@
 /* ============================================================
-   Wizdam Scola – Stylesheet Utama
+   Sangia Scieco – Stylesheet Utama
    Menggunakan CSS custom (tanpa build step) dengan
    variabel CSS dan utility classes ringan.
    ============================================================ */
@@ -250,7 +250,7 @@ h3 { font-size: 1.1rem; }
 .inline-block { display: inline-block; }
 .inline-flex { display: inline-flex; }
 .block { display: block; }
-.select-none { user-select: none; }
+.select-none { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 .cursor-pointer { cursor: pointer; }
 .cursor-not-allowed { cursor: not-allowed; }
 
