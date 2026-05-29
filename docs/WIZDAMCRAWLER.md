@@ -15,7 +15,7 @@
 7. [RawDataPersister: Penyimpanan Cache](#rawdatapersister-penyimpanan-cache)
 8. [Endpoint OAI-PMH yang Dikenal](#endpoint-oai-pmh-yang-dikenal)
 9. [Format Metadata](#format-metadata)
-10. [Integrasi dengan Wizdam-APIs](#integrasi-dengan-wizdam-apis)
+10. [Integrasi dengan Sangia-APIs](#integrasi-dengan-sangia-apis)
 11. [Scheduled Jobs](#scheduled-jobs)
 12. [Etika & Compliance](#etika--compliance)
 13. [Contoh Penggunaan](#contoh-penggunaan)
@@ -315,7 +315,7 @@ Semua format (Dublin Core, JATS, MODS) dinormalisasi ke skema yang sama:
 
 ---
 
-## Integrasi dengan Wizdam-APIs
+## Integrasi dengan Sangia-APIs
 
 WizdamCrawler dan Sangia Engine bekerja bersama lewat pola **supplied_data**:
 
@@ -332,7 +332,7 @@ WizdamCrawler dan Sangia Engine bekerja bersama lewat pola **supplied_data**:
 4. Sangia menggunakan data yang disuplai tanpa fetch ulang:
    response: { data_source: "wizdam_scola_db", wizdam_score: 87.4 }
 
-5. Skor disimpan ke database Wizdam Scola
+5. Skor disimpan ke database Sangia Scieco
 ```
 
 **Keuntungan pola ini:**

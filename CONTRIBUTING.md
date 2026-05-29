@@ -1,4 +1,4 @@
-# Contributing to Wizdam Scola
+# Contributing to Sangia Scieco
 
 First of all, thank you for contributing!
 

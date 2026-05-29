@@ -1,8 +1,8 @@
-# Panduan Instalasi Wizdam Scola
+# Panduan Instalasi Sangia Scieco
 
 ## Cara Instalasi (Tanpa Terminal)
 
-Aplikasi Wizdam Scola dilengkapi dengan **installer berbasis web** yang memudahkan proses instalasi tanpa perlu mengakses terminal/server command line.
+Aplikasi Sangia Scieco dilengkapi dengan **installer berbasis web** yang memudahkan proses instalasi tanpa perlu mengakses terminal/server command line.
 
 ### Langkah-langkah Instalasi:
 
@@ -57,23 +57,23 @@ Aplikasi Wizdam Scola dilengkapi dengan **installer berbasis web** yang memudahk
 
 ```
 /workspace
-├── app/                    # Logika bisnis aplikasi
-│   ├── Core/              # Container,基础类
+├── app/                   # Logika bisnis aplikasi
+│   ├── Core/              # Container
 │   ├── Http/              # Request, Response, Router, Middleware
 │   ├── Services/          # Service layer (API client, dll)
 │   ├── Repositories/      # Database access layer
 │   ├── Models/            # Entity/DTO classes
 │   ├── Jobs/              # Background jobs (crawling, analysis)
 │   └── Install/           # Installer classes
-├── library/                # Library kustom (bukan vendor)
-├── config/                 # File konfigurasi
-├── views/                  # Template HTML/PHP
-├── public/                 # File publik (document root)
+├── library/               # Library kustom (bukan vendor)
+├── config/                # File konfigurasi
+├── views/                 # Template HTML/PHP
+├── public/                # File publik (document root)
 │   ├── index.php          # Entry point aplikasi
 │   ├── install/           # Folder installer
 │   └── assets/            # CSS, JS, images
-├── storage/                # Logs, cache, uploads
-├── vendor/                 # Composer dependencies
+├── storage/               # Logs, cache, uploads
+├── vendor/                # Composer dependencies
 └── database_schema.sql    # Skema database
 ```
 
@@ -86,7 +86,7 @@ Setelah login sebagai admin, Anda dapat:
 - Memantau job queue (crawling, analisis)
 - Melihat statistik dan visualisasi GeoIP
 
-### 2. Integrasi Wizdam API
+### 2. Integrasi Sangia API
 - Kunjungi `https://developers.sangia.org` untuk dokumentasi API
 - Buat API key baru dari dashboard admin
 - Konfigurasi endpoint API di pengaturan

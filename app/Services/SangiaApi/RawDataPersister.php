@@ -8,8 +8,8 @@ use Wizdam\Database\DBConnector;
 
 /**
  * Menyimpan raw_data dari response Sangia API ke tabel cache di DB.
- * Dipanggil setiap kali wizdam-apis fetch dari sumber eksternal
- * (data_source !== 'wizdam_scola_db').
+ * Dipanggil setiap kali sangia-apis fetch dari sumber eksternal
+ * (data_source !== 'sangia_scieco_db').
  */
 class RawDataPersister
 {

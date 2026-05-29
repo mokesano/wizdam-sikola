@@ -61,7 +61,7 @@ class JournalProfileHandler
             'liveIndexing' => $liveIndexing,
             'score'        => $score,
             'scoreHistory' => $scoreHistory,
-            'pageTitle'    => ($journal['title'] ?? "Jurnal ISSN $issn") . ' – Wizdam Scola',
+            'pageTitle'    => ($journal['title'] ?? "Jurnal ISSN $issn") . ' – Sangia Scieco',
         ]);
     }
 
@@ -95,7 +95,7 @@ class JournalProfileHandler
             'liveIndexing' => $liveIndexing,
             'score'        => $score,
             'scoreHistory' => $scoreHistory,
-            'pageTitle'    => ($journal['title'] ?? "Jurnal ISSN $issn") . ' – Wizdam Scola',
+            'pageTitle'    => ($journal['title'] ?? "Jurnal ISSN $issn") . ' – Sangia Scieco',
         ]);
 
         return Response::html($html);

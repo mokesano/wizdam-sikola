@@ -1,4 +1,4 @@
-# Panduan Instalasi Wizdam Scola
+# Panduan Instalasi Sangia Scieco
 
 ## Prasyarat
 
@@ -36,8 +36,8 @@ Script ini akan:
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/mokesano/wizdam-scola.git
-cd wizdam-scola
+git clone https://github.com/mokesano/sangia-scieco.git
+cd sangia-scieco
 ```
 
 ### 2. Install PHP Dependencies
@@ -62,7 +62,7 @@ Edit `.env` dan isi nilai-nilai berikut:
 
 ```env
 # Aplikasi
-APP_NAME="Wizdam Scola"
+APP_NAME="Sangia Scieco"
 APP_ENV=development          # production untuk live
 APP_DEBUG=true               # false di production
 APP_URL=https://domain-anda.com
@@ -71,7 +71,7 @@ TWIG_CACHE=false             # true di production
 # Database
 DB_HOST=localhost
 DB_PORT=3306
-DB_DATABASE=wizdam_scola
+DB_DATABASE=sangia_scieco
 DB_USERNAME=dbuser
 DB_PASSWORD=password_aman
 
@@ -83,9 +83,9 @@ ORCID_SANDBOX=true           # false di production
 
 # Sangia AI Engine
 SANGIA_API_URL=https://api.sangia.org
-SANGIA_API_KEY=               # API key dari wizdam-apis
+SANGIA_API_KEY=               # API key dari sangia-apis
 SANGIA_SERVICE_KEY=           # Kunci admin untuk revoke
-WIZDAM_SHARED_SECRET=         # HARUS sama dengan wizdam-apis
+WIZDAM_SHARED_SECRET=         # HARUS sama dengan sangia-apis
 
 # Keamanan
 ENCRYPTION_KEY=               # 32 karakter random
@@ -100,13 +100,13 @@ php -r "echo bin2hex(random_bytes(32));"
 
 ```bash
 # Buat database
-mysql -u root -p -e "CREATE DATABASE wizdam_scola CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e "CREATE DATABASE sangia_scieco CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # Jalankan skema utama
-mysql -u root -p wizdam_scola < database_schema_full.sql
+mysql -u root -p sangia_scieco < database_schema_full.sql
 
 # Jalankan migrasi v2 (tabel cache & bobot)
-mysql -u root -p wizdam_scola < database_migration_v2.sql
+mysql -u root -p sangia_scieco < database_migration_v2.sql
 ```
 
 ### 6. Build React SPA
@@ -140,15 +140,15 @@ php -S localhost:8000 -t public/
 ```apache
 <VirtualHost *:80>
     ServerName domain-anda.com
-    DocumentRoot /var/www/wizdam-scola/public
+    DocumentRoot /var/www/sangia-scieco/public
 
-    <Directory /var/www/wizdam-scola/public>
+    <Directory /var/www/sangia-scieco/public>
         AllowOverride All
         Require all granted
     </Directory>
 
-    ErrorLog ${APACHE_LOG_DIR}/wizdam-error.log
-    CustomLog ${APACHE_LOG_DIR}/wizdam-access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/sangia-error.log
+    CustomLog ${APACHE_LOG_DIR}/sangia-access.log combined
 </VirtualHost>
 ```
 
@@ -166,7 +166,7 @@ RewriteRule ^ index.php [QSA,L]
 server {
     listen 80;
     server_name domain-anda.com;
-    root /var/www/wizdam-scola/public;
+    root /var/www/sangia-scieco/public;
     index index.php;
 
     location / {
@@ -199,7 +199,7 @@ server {
 | `TWIG_CACHE` | | `false` | Cache template Twig |
 | `APP_CORS_ORIGINS` | | `http://localhost:3000` | CORS origins (koma-separated) |
 | `DB_HOST` | ✓ | `localhost` | Host database |
-| `DB_DATABASE` | ✓ | `wizdam_scola` | Nama database |
+| `DB_DATABASE` | ✓ | `sangia_scieco` | Nama database |
 | `DB_USERNAME` | ✓ | `root` | Username DB |
 | `DB_PASSWORD` | ✓ | | Password DB |
 | `ORCID_CLIENT_ID` | ✓ | | Client ID dari orcid.org/developer |

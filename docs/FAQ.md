@@ -2,11 +2,11 @@
 
 ## Umum
 
-**Q: Apa itu Wizdam Scola?**  
+**Q: Apa itu Sangia Scieco?**  
 A: Platform analisis dampak penelitian Indonesia yang mengukur kontribusi peneliti, artikel, institusi, dan jurnal menggunakan Wizdam Impact Score (WIS) — skor komposit dari 4 pilar: Akademik, Sosial, Ekonomi, dan SDG.
 
 **Q: Apa itu Sangia AI Engine?**  
-A: Sangia adalah backend analitik AI (`api.sangia.org`) yang melakukan kalkulasi berat: SDG classification, impact score, trend analysis, dan policy recommendation. Sangia tidak menyimpan data — semua persistensi dilakukan oleh Wizdam Scola. Sangia Engine dikelola terpisah di repository `wizdam-apis`.
+A: Sangia adalah backend analitik AI (`api.sangia.org`) yang melakukan kalkulasi berat: SDG classification, impact score, trend analysis, dan policy recommendation. Sangia tidak menyimpan data — semua persistensi dilakukan oleh Sangia Scieco. Sangia Engine dikelola terpisah di repository `sangia-apis`.
 
 **Q: Mengapa ada dua server (PHP port 8000 dan Node port 3000)?**  
 A: Saat development, PHP melayani halaman Twig dan REST API, sementara Vite dev server melayani React frontend dengan Hot Module Replacement (HMR). Di production, hanya PHP yang berjalan — React di-build menjadi file statis di `public/app/`.

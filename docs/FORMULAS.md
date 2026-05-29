@@ -1,4 +1,4 @@
-# Formula, Bobot, dan Metodologi Wizdam Scola
+# Formula, Bobot, dan Metodologi Sangia Scieco
 
 ## Wizdam Impact Score (WIS)
 
@@ -148,13 +148,13 @@ Valid jika: timestamp + 365×86400 > now() AND HMAC cocok
 wz_42_1717200000_a3f8c2e1b4d5f678
 ```
 
-`WIZDAM_SHARED_SECRET` harus sama antara wizdam-scola dan wizdam-apis untuk validasi silang.
+`WIZDAM_SHARED_SECRET` harus sama antara sangia-scieco dan sangia-apis untuk validasi silang.
 
 ---
 
 ## Supplied Data Pattern
 
-Untuk menghemat kuota API dan mengurangi latensi, Wizdam Scola mengirimkan data yang sudah ada di database ke Sangia API (`supplied_data`), sehingga Sangia tidak perlu fetch ulang dari ORCID/Scopus.
+Untuk menghemat kuota API dan mengurangi latensi, Sangia Scieco mengirimkan data yang sudah ada di database ke Sangia API (`supplied_data`), sehingga Sangia tidak perlu fetch ulang dari ORCID/Scopus.
 
 ```
 IF author_profiles_cache EXISTS FOR orcid:

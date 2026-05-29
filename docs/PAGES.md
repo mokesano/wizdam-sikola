@@ -1,8 +1,8 @@
-# Panduan Halaman dan Menu Wizdam Scola
+# Panduan Halaman dan Menu Sangia Scieco
 
 ## Arsitektur Rendering
 
-Wizdam Scola menggunakan dua model rendering:
+Sangia Scieco menggunakan dua model rendering:
 
 | Model | Teknologi | Digunakan Untuk |
 |-------|-----------|-----------------|
