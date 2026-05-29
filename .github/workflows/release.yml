@@ -22,7 +22,6 @@ name: Release Otomatis (Semantic Release)
 on:
   push:
     branches:
-      - main
       - master
       - develop
       - production
