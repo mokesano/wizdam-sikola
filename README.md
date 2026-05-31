@@ -117,5 +117,3 @@ Dikembangkan oleh [@mokesano](https://github.com/mokesano)
 - **Issues:** [GitHub Issues](https://github.com/mokesano/sangia-scieco/issues)
 
 ---
-
-*Dibuat dengan ❤️ untuk mendukung ekosistem riset Indonesia.*
